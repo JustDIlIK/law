@@ -52,6 +52,24 @@ class BaseRepository:
     async def find_by_id(cls, record_id):
         async with async_session() as session:
             query = select(cls.model).filter_by(id=record_id)
+
+            mapper = inspect(cls.model)
+            relationships = mapper.relationships
+            fields = relationships.keys()
+            load_options = []
+            for field in fields:
+                rel_property = relationships[field]
+                direction = rel_property.direction
+                use_list = rel_property.uselist
+                if direction == ONETOMANY or use_list is False:
+                    loader = selectinload(getattr(cls.model, field))
+                else:
+                    loader = joinedload(getattr(cls.model, field))
+
+                load_options.append(loader)
+
+            query = query.options(*load_options)
+
             result = await session.execute(query)
             return result.scalar()
 
