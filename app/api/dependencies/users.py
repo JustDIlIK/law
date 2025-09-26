@@ -23,7 +23,7 @@ async def get_current_user(token: str = Depends(get_token)):
     except JWTError:
         return HTTPException(status_code=401, detail="Неверный формат токена")
     except AttributeError as e:
-        return HTTPException(status_code=401, detail=e.name)
+        return HTTPException(status_code=401, detail="detail": "Токен отсутствует")
 
     expire: str = payload.get("exp")
     if not expire or int(expire) < datetime.utcnow().timestamp():
