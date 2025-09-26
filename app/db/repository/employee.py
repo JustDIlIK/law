@@ -25,9 +25,6 @@ class EmployeeRepository(BaseRepository):
             emp = result.scalar_one_or_none()
 
             if emp:
-                print(f"{from_seconds_to_date(data["updated_at"])=}")
-                print(f"{emp.updated_at=}")
-
                 if from_seconds_to_date(data["updated_at"]) < emp.updated_at:
                     print("Adding")
 

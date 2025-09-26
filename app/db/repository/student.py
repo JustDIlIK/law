@@ -25,9 +25,6 @@ class StudentRepository(BaseRepository):
             stud = result.scalar_one_or_none()
             print(f"{data=}")
             if stud:
-                print(f"{from_seconds_to_date(data["updated_at"])=}")
-                print(f"{stud.updated_at=}")
-
                 if from_seconds_to_date(data["updated_at"]) < stud.updated_at:
                     print("Adding")
                     history = StudentHistory(**data, student_id=stud.id)
