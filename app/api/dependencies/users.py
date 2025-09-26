@@ -13,7 +13,7 @@ def get_token(request: Request):
 
     if not token:
         print(f"{token=}")
-        return JSONResponse(status_code=401, content={"detail": "Токен отсутствует"})
+        raise HTTPException(status_code=401, detail="Токен отсутствует")
     return token
 
 
