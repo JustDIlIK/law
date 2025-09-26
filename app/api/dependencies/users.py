@@ -12,6 +12,7 @@ def get_token(request: Request):
     token = request.cookies.get("token")
 
     if not token:
+        print(f"{token=}")
         return JSONResponse(status_code=401, content={"detail": "Токен отсутствует"})
     return token
 
@@ -21,6 +22,8 @@ async def get_current_user(token: str = Depends(get_token)):
         payload = jwt.decode(token, settings.KEY, settings.ALGORITHM)
     except JWTError:
         return HTTPException(status_code=401, detail="Неверный формат токена")
+    except AttributeError as e:
+        return HTTPException(status_code=401, detail=e.name)
 
     expire: str = payload.get("exp")
     if not expire or int(expire) < datetime.utcnow().timestamp():

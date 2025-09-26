@@ -12,12 +12,12 @@ class SUsersAuthLogin(BaseModel):
 
 
 class SUsersGetCurrent(BaseModel):
-    full_name: str
-    id: int
-    gender_code: str
-    role_id: int
-    image_url: str
-    created_at: datetime
+    full_name: str | None
+    id: int | None
+    gender_code: str | None
+    role_id: int | None
+    image_url: str | None
+    created_at: datetime | None
 
     external_id: str | None
     year_of_enter: int | None
