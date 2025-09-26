@@ -21,7 +21,7 @@ router = APIRouter(
 )
 
 
-@router.post("/register/")
+@router.post("/register")
 async def register_user(
     image: UploadFile = Depends(check_image),
     login: str = Body(...),
@@ -61,7 +61,7 @@ async def register_user(
     return user
 
 
-@router.post("/login/")
+@router.post("/login")
 async def login_user(response: Response, user_data: SUsersAuthLogin):
     print("Login")
     user = await authenticate_user(user_data.login, user_data.password)
@@ -77,11 +77,11 @@ async def login_user(response: Response, user_data: SUsersAuthLogin):
     return {"token": access_token}
 
 
-@router.post("/logout/")
+@router.post("/logout")
 async def login_user(response: Response):
     response.delete_cookie("token")
 
 
-@router.get("/current-user/")
+@router.get("/current-user")
 async def login_user(user=Depends(get_current_user)):
     return user

@@ -15,7 +15,7 @@ async def list_criteria(achievement_type_id: int):
     return result
 
 
-@router.post("/")
+@router.post("")
 async def create_criteria(achievement_criteria: AchievementCriteriaSchema):
     criteria = await AchievementCriteriaRepository.add_record(
         **achievement_criteria.model_dump()

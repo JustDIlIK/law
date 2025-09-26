@@ -10,7 +10,7 @@ router = APIRouter(
 )
 
 
-@router.get("/")
+@router.get("")
 async def get_education_years(page: int = 1, limit: int = 10):
 
     education_years = await EducationYearRepository.get_all(

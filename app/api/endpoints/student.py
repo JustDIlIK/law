@@ -9,7 +9,7 @@ from app.db.repository.student_achievement import StudentAchievementRepository
 router = APIRouter(prefix="/students", tags=["Студенты"])
 
 
-@router.get("/")
+@router.get("")
 async def get_students(page: int = 1, limit: int = 10):
 
     students = await StudentRepository.get_all(
@@ -19,14 +19,14 @@ async def get_students(page: int = 1, limit: int = 10):
     return students
 
 
-@router.get("/{student_id}/")
+@router.get("/{student_id}")
 async def get_student(student_id: str):
 
     student = await StudentRepository.find_by_variable(student_id_number=student_id)
     return student
 
 
-@router.get("/education-year/{education_year_code}/")
+@router.get("/education-year/{education_year_code}")
 async def get_by_education_year(
     education_year_code: str, page: int = 1, limit: int = 50
 ):
@@ -40,7 +40,7 @@ async def get_by_education_year(
     return students
 
 
-@router.post("/seach/")
+@router.post("/seach")
 async def get_by_education_year(full_name: str):
     await asyncio.sleep(0.3)
 
@@ -49,7 +49,7 @@ async def get_by_education_year(full_name: str):
     return students
 
 
-@router.delete("/{student_id}/")
+@router.delete("/{student_id}")
 async def delete_student(student_id: str):
     student = await StudentRepository.delete_student(student_id)
     return student

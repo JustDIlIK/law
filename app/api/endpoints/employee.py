@@ -5,7 +5,7 @@ from app.db.repository.employee import EmployeeRepository
 router = APIRouter(prefix="/employees", tags=["Сотрудники"])
 
 
-@router.get("/")
+@router.get("")
 async def get_employees(page: int = 1, limit: int = 10):
 
     employees = await EmployeeRepository.get_all(
