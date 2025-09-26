@@ -9,7 +9,7 @@ from app.db.repository.user import UserRepository
 
 
 def get_token(request: Request):
-    token = request.cookies.get("token")
+    token = request.headers.get("token")
 
     if not token:
         print(f"{token=}")
