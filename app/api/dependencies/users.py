@@ -9,12 +9,12 @@ from app.db.repository.user import UserRepository
 
 
 def get_token(request: Request):
-    token = request.headers.get("token")
+    token = request.headers.get("Authorization")
 
     if not token:
         print(f"{token=}")
         raise HTTPException(status_code=401, detail="Токен отсутствует")
-    return token
+    return token.split(" ")[1]
 
 
 async def get_current_user(token: str = Depends(get_token)):
