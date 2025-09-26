@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 
-from app.api.endpoints.student import router as student_router
+from api.endpoints.student import router as student_router
 from app.api.endpoints.employee import router as employee_router
 from app.api.endpoints.auth import router as auth_router
 from app.api.endpoints.education_year import router as education_year_router

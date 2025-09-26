@@ -13,7 +13,7 @@ class StudentAchievement(Base):
         ForeignKey("students.student_id_number")
     )
     achievement_criteria_id: Mapped[int] = mapped_column(
-        ForeignKey("achievement_criterias.id")
+        ForeignKey("achievement_criteria.id")
     )
 
     document_url: Mapped[str] = mapped_column(nullable=True)
@@ -38,3 +38,6 @@ class StudentAchievement(Base):
     student = relationship("Student", back_populates="student_achievements")
     semester = relationship("Semester", back_populates="student_achievements")
     year = relationship("EducationYear", back_populates="student_achievements")
+    criteria = relationship(
+        "AchievementCriteria", back_populates="student_achievements"
+    )
