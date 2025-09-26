@@ -37,7 +37,9 @@ from app.db.repository.specialty import SpecialtyRepository
 from app.db.repository.staff_position import StaffPositionRepository
 from app.db.repository.structure_type import StructureTypeRepository
 from app.db.repository.student import StudentRepository
+from app.db.repository.student_achievement import StudentAchievementRepository
 from app.db.repository.student_status import StudentStatusRepository
+from app.db.repository.student_subject import StudentSubjectRepository
 from app.db.repository.student_type import StudentTypeRepository
 from app.db.repository.university import UniversityRepository
 
@@ -73,13 +75,13 @@ async def fetch_students(
 async def fetch_student(
     url: str,
     student_id_number: str,
-    student_id: int,
+    student_hemis_id: int,
 ):
     print(f"{url=}")
     async with AsyncClient() as client:
 
         response = await client.get(
-            url=f"{url}?student_id_number={student_id_number}&student_id={student_id}",
+            url=f"{url}?student_id_number={student_id_number}&student_id={student_hemis_id}",
             headers={"Authorization": f"Bearer {settings.HEMIS_TOKEN}"},
         )
         response.raise_for_status()
@@ -331,7 +333,7 @@ async def add_student(students_list: list):
             "year_of_enter": student_element["year_of_enter"],
             "created_at": from_seconds_to_date(student_element["created_at"]),
             "updated_at": from_seconds_to_date(student_element["updated_at"]),
-            "login": f"{student_element["second_name"].lower()}_{student_element["first_name"].lower()}",
+            "login": f"{student_element['second_name'].lower()}_{student_element['first_name'].lower()}",
             "password": get_hashed_password(student_element["second_name"]),
             "role_id": student_role.id,
             "is_graduate": student_element["is_graduate"],
@@ -687,47 +689,47 @@ async def get_student_list():
     print("Finished")
 
 
-async def save_student_from_api(
-    student_id_number: str,
-    student_hemis_id: int,
-):
+async def save_student_from_api():
+    page = 1
+    limit = 100
 
-    data = await fetch_student(
-        url=settings.HEMIS_GET_STUDENT,
-        student_id_number=student_id_number,
-        student_hemis_id=student_hemis_id,
-    )
-
-    for gpa in data.get("studentGpas", []):
-
-        await StudentAc
-
-        achievement = StudentAchievement(
-            student_id=student_id_number,
-            achievement_type_id=1,
-            value=float(gpa["gpa"]),
-            semester_code=gpa["educationYear"]["code"],
-            education_year=gpa["educationYear"]["name"],
+    while True:
+        students = await StudentRepository.get_all(
+            page,
+            limit,
         )
-        session.add(achievement)
+        students = students["data"]
+        if not students:
+            break
+        for student in students:
+            data = await fetch_student(
+                url=settings.HEMIS_GET_STUDENT,
+                student_id_number=student.student_id_number,
+                student_hemis_id=student.external_id,
+            )
+            data = data["data"]
+            for gpa in data.get("studentGpas", []):
 
-    # --- subjects
-    edu_year = data["educationYear"]["name"]
-    for subj in data.get("subjects", []):
-        subject = StudentSubject(
-            student_id=student.id,
-            subject_id=subj["id"],
-            subject_name=subj["name"],
-            semester_code=subj["semester"]["code"],
-            education_year=edu_year,
-            credit=subj["credit"],
-            grade=subj["grade"],
-            total_point=subj["total_point"],
-        )
-        session.add(subject)
+                await StudentAchievementRepository.add_record(
+                    student_id_number=student.student_id_number,
+                    achievement_criteria_id=2,
+                    document_url=None,
+                    value=float(gpa["gpa"]),
+                    year_code=gpa["educationYear"]["code"],
+                )
 
-    await session.commit()
-    return student
-
-
-asyncio.run(save_student_from_api("400231100122", 1311))
+            for subj in data.get("subjects", []):
+                await StudentSubjectRepository.add_record(
+                    student_id=student.student_id_number,
+                    position=subj["position"],
+                    name=subj["name"],
+                    subject_type_code=subj["subjectType"]["code"],
+                    subject_type_name=subj["subjectType"]["name"],
+                    semester_code=subj["semester"]["code"],
+                    credit=subj["credit"],
+                    grade=subj["grade"],
+                    total_point=subj["total_point"],
+                    exam_finish_code=subj["subjectType"]["code"],
+                    exam_finish_name=subj["subjectType"]["name"],
+                )
+        page += 1

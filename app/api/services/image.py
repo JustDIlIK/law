@@ -13,7 +13,7 @@ async def download_image(url: str, save_path: str):
 
 
 async def save_image(file, url):
-    file_name = f"{uuid4().hex}.{file.filename.split(".")[-1]}"
+    file_name = f"{uuid4().hex}.{file.filename.split('.')[-1]}"
 
     file_name = file_name.replace(" ", "")
 

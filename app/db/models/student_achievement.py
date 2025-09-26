@@ -19,12 +19,13 @@ class StudentAchievement(Base):
     document_url: Mapped[str] = mapped_column(nullable=True)
     is_verified: Mapped[bool] = mapped_column(default=False)
 
-    value: Mapped[int]
+    value: Mapped[float]
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     semester_code: Mapped[str] = mapped_column(
-        ForeignKey("semesters.code"), nullable=False
+        ForeignKey("semesters.code"),
+        nullable=True,
     )
     year_code: Mapped[str] = mapped_column(
         ForeignKey("education_years.code"), nullable=False
@@ -32,9 +33,6 @@ class StudentAchievement(Base):
 
     moderator_comment: Mapped[str] = mapped_column(nullable=True)
 
-    achievement_criteria = relationship(
-        "AchievementCriteria", back_populates="student_achievements"
-    )
     student = relationship("Student", back_populates="student_achievements")
     semester = relationship("Semester", back_populates="student_achievements")
     year = relationship("EducationYear", back_populates="student_achievements")
