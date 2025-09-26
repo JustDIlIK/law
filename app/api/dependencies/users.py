@@ -19,7 +19,8 @@ def get_token(request: Request):
 
 async def get_current_user(token: str = Depends(get_token)):
     try:
-        print(f"{token=}")
+        print(f"TOKEN={token}")
+        print(f"KEY={settings.KEY}")
         payload = jwt.decode(token, settings.KEY, algorithms=[settings.ALGORITHM])
         print(f"{token=}")
 
