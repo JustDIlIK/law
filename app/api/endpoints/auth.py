@@ -82,6 +82,6 @@ async def login_user(response: Response):
     response.delete_cookie("token")
 
 
-@router.post("/current-user/", response_model=SUsersGetCurrent)
+@router.get("/current-user/", response_model=SUsersGetCurrent)
 async def login_user(user=Depends(get_current_user)):
     return user
