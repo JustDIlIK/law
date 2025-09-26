@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 from jose import jwt
 from passlib.context import CryptContext
-from pydantic import EmailStr
 
 from app.config.config import settings
 from app.db.repository.user import UserRepository
