@@ -44,7 +44,7 @@ class User(Base):
         nullable=True,
     )
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))
-    role = relationship("Role", backref="users")
+    role = relationship("Role", back_populates="users")
 
     created_at: Mapped[datetime]
     updated_at: Mapped[datetime]

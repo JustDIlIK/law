@@ -12,4 +12,4 @@ class Role(Base):
         default=True,
     )
 
-    users = relationship("User", backref="role")
+    users = relationship("User", back_populates="role")
