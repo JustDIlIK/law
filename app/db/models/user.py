@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.connection import Base
 from app.db.models import Department
 from app.db.models.gender import Gender
+from app.db.models.permission import user_permissions
 
 
 class User(Base):
@@ -49,3 +50,10 @@ class User(Base):
     created_at: Mapped[datetime]
     updated_at: Mapped[datetime]
     email: Mapped[str] = mapped_column(nullable=True)
+
+    permissions = relationship(
+        "Permission",
+        secondary=user_permissions,
+        back_populates="users",
+        lazy="selectin",
+    )

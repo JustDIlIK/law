@@ -23,9 +23,9 @@ class StudentAchievement(Base):
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
-    semester_code: Mapped[str] = mapped_column(
-        ForeignKey("semesters.code"),
-        nullable=True,
+    level_code: Mapped[str] = mapped_column(
+        ForeignKey("levels.code"),
+        nullable=False,
     )
     year_code: Mapped[str] = mapped_column(
         ForeignKey("education_years.code"), nullable=False
@@ -34,7 +34,7 @@ class StudentAchievement(Base):
     moderator_comment: Mapped[str] = mapped_column(nullable=True)
 
     student = relationship("Student", back_populates="student_achievements")
-    semester = relationship("Semester", back_populates="student_achievements")
+    level = relationship("Level", back_populates="student_achievements")
     year = relationship("EducationYear", back_populates="student_achievements")
     criteria = relationship(
         "AchievementCriteria", back_populates="student_achievements"

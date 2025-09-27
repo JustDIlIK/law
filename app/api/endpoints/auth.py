@@ -11,6 +11,7 @@ from app.api.services.auth import (
     authenticate_user,
     create_access_token,
 )
+from app.api.services.base import to_dict
 from app.api.services.image import save_image
 from app.config.config import settings
 from app.db.repository.user import UserRepository
@@ -83,4 +84,6 @@ async def login_user(response: Response):
 
 @router.get("/current-user")
 async def login_user(user=Depends(get_current_user)):
+    print(f"{user=}")
+
     return user

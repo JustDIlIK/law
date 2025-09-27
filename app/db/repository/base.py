@@ -30,7 +30,7 @@ class BaseRepository:
 
             query = query.options(*load_options)
             result = await session.execute(query)
-            result = result.scalars().all()
+            result = result.unique().scalars().all()
 
             total_query = select(func.count()).select_from(cls.model)
             total = await session.scalar(total_query)

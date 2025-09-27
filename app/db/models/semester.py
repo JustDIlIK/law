@@ -13,4 +13,3 @@ class Semester(Base):
     academic_year_code: Mapped[str] = mapped_column(
         ForeignKey("education_years.code"), nullable=True
     )
-    student_achievements = relationship("StudentAchievement", back_populates="semester")

@@ -1,6 +1,7 @@
 from .gender import Gender
 from .country import Country
 from .citizenship import Citizenship
+from .permission import Permission
 from .student_status import StudentStatus
 from .education_form import EducationForm
 from .education_type import EducationType
@@ -37,7 +38,6 @@ from .student_history import StudentHistory
 from .achievement_type import AchievementType
 from .achievement_criteria import AchievementCriteria
 from .student_achievement import StudentAchievement
-
 
 __all__ = [
     # справочники (общие)
@@ -85,4 +85,5 @@ __all__ = [
     "AchievementCriteria",
     "StudentAchievement",
     "StudentSubject",
+    "Permission",
 ]

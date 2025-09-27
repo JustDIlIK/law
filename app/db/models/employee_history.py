@@ -10,7 +10,7 @@ from app.db.connection import Base
 class EmployeeHistory(Base):
     __tablename__ = "employee_history"
 
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"))
+    employee_id: Mapped[str] = mapped_column(ForeignKey("employees.employee_id_number"))
     changed_at: Mapped[datetime] = mapped_column(server_default=func.now())
     external_id: Mapped[int] = mapped_column(index=True)
     image_url: Mapped[Optional[str]] = mapped_column(String(512))

@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from app.api.schemas.achievement_criteria import AchievementCriteriaSchema
 from app.db.repository.achievement_criteria import AchievementCriteriaRepository
 
-router = APIRouter(prefix="/critirea", tags=["Кретерии достижения"])
+router = APIRouter(prefix="/criteria", tags=["Критерии достижения"])
 
 
 @router.get("/{achievement_type_id}")

@@ -1,5 +1,5 @@
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.connection import Base
 
@@ -9,3 +9,5 @@ class Level(Base):
 
     code: Mapped[str] = mapped_column(String(512), unique=True)
     name: Mapped[str] = mapped_column(String(512), nullable=False)
+
+    student_achievements = relationship("StudentAchievement", back_populates="level")

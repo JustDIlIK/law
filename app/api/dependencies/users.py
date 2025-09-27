@@ -25,15 +25,15 @@ async def get_current_user(token: str = Depends(get_token)):
         print(f"{token=}")
 
     except JWTError:
-        return HTTPException(status_code=401, detail="Неверный формат токена")
+        raise HTTPException(status_code=401, detail="Неверный формат токена")
 
     expire: str = payload.get("exp")
     if not expire or int(expire) < datetime.utcnow().timestamp():
-        return HTTPException(status_code=401, detail="Токен истек")
+        raise HTTPException(status_code=401, detail="Токен истек")
 
     user_id: str = payload.get("sub")
     if not user_id:
-        return HTTPException(status_code=401, detail="Неверный логин или пароль")
+        raise HTTPException(status_code=401, detail="Неверный логин или пароль")
 
     user = await UserRepository.find_by_id(int(user_id))
 

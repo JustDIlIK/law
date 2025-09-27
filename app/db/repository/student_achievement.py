@@ -26,8 +26,8 @@ class StudentAchievementRepository(BaseRepository):
                 )
                 .options(
                     joinedload(cls.model.student),
-                    joinedload(cls.model.achievement_type),
-                    joinedload(cls.model.semester),
+                    joinedload(cls.model.criteria),
+                    joinedload(cls.model.level),
                     joinedload(cls.model.year),
                 )
             )

@@ -1,14 +1,19 @@
 import asyncio
 import uuid
+from collections import Counter
 from datetime import datetime, timedelta
 
+import httpx
+import uvicorn
 from httpx import AsyncClient
+from sqlalchemy import select
 
 from app.api.services.auth import get_hashed_password
 from app.api.services.dates import from_seconds_to_date
 from app.api.services.image import download_image
 from app.config.config import settings
-from app.db.models import LocationType
+from app.db.connection import async_session
+from app.db.models import LocationType, Student
 from app.db.repository.academic_degree import AcademicDegreeRepository
 from app.db.repository.academic_rank import AcademicRankRepository
 from app.db.repository.accommodation import AccommodationRepository
@@ -65,8 +70,9 @@ async def fetch_students(
 ):
     async with AsyncClient() as client:
         response = await client.get(
-            url=f"{url}?limit={limit}&page={page}",
+            url=f"{url}?limit={limit}&page={page}&search=400231100332",
             headers={"Authorization": f"Bearer {settings.HEMIS_TOKEN}"},
+            timeout=30.0,
         )
         response.raise_for_status()
         return response.json()
@@ -672,19 +678,22 @@ async def get_student_list():
 
     while True:
 
-        data = await fetch_students(
-            url=settings.HEMIS_GET_STUDENTS,
-            limit=limit,
-            page=page,
-        )
-        data = data["data"]
-        page += 1
+        try:
+            data = await fetch_students(
+                url=settings.HEMIS_GET_STUDENTS,
+                limit=limit,
+                page=page,
+            )
+            data = data["data"]
+            page += 1
 
-        await add_student(data["items"])
+            await add_student(data["items"])
 
-        page_count = data["pagination"]["pageCount"]
-        if page > page_count:
-            break
+            page_count = data["pagination"]["pageCount"]
+            if page > page_count:
+                break
+        except httpx.RequestError as e:
+            print(f"Ошибка запроса: {e}")
 
     print("Finished")
 
@@ -710,13 +719,16 @@ async def save_student_from_api():
             data = data["data"]
             for gpa in data.get("studentGpas", []):
 
-                await StudentAchievementRepository.add_record(
-                    student_id_number=student.student_id_number,
-                    achievement_criteria_id=2,
-                    document_url=None,
-                    value=float(gpa["gpa"]),
-                    year_code=gpa["educationYear"]["code"],
-                )
+                print(f"{gpa=}")
+
+                # await StudentAchievementRepository.add_record(
+                #     student_id_number=student.student_id_number,
+                #     achievement_criteria_id=2,
+                #     document_url=None,
+                #     value=float(gpa["gpa"]),
+                #     level_code=gpa["level"]["code"],
+                #     year_code=gpa["educationYear"]["code"],
+                # )
 
             for subj in data.get("subjects", []):
                 await StudentSubjectRepository.add_record(

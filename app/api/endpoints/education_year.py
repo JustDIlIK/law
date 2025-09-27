@@ -5,13 +5,13 @@ from fastapi import APIRouter
 from app.db.repository.education_year import EducationYearRepository
 
 router = APIRouter(
-    prefix="/education-year",
+    prefix="/education-years",
     tags=["Годы обучения"],
 )
 
 
 @router.get("")
-async def get_education_years(page: int = 1, limit: int = 10):
+async def get_education_years(page: int = 1, limit: int = 15):
 
     education_years = await EducationYearRepository.get_all(
         page,

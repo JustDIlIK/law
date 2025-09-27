@@ -1,12 +1,10 @@
 from fastapi import APIRouter, UploadFile, HTTPException
 
-from app.api.schemas.achievement_criteria import AchievementCriteriaSchema
 from app.api.services.image import save_image
 from app.config.config import settings
-from app.db.repository.achievement_criteria import AchievementCriteriaRepository
 from app.db.repository.student_achievement import StudentAchievementRepository
 
-router = APIRouter(prefix="/critirea", tags=["Кретерии достижения"])
+router = APIRouter(prefix="/students-achievements", tags=["Достижения студентов"])
 
 
 @router.post("/student/{student_id}")

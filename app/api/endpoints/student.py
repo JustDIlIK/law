@@ -1,8 +1,14 @@
 import asyncio
+from typing import Optional
 
 from fastapi import APIRouter
+from starlette import status
+from starlette.responses import JSONResponse
 
 from app.api.services.hemis_helper import get_student_list, get_employee_list
+from app.db.repository.education_type import EducationTypeRepository
+from app.db.repository.gender import GenderRepository
+from app.db.repository.level import LevelRepository
 from app.db.repository.student import StudentRepository
 from app.db.repository.student_achievement import StudentAchievementRepository
 
@@ -10,11 +16,38 @@ router = APIRouter(prefix="/students", tags=["Студенты"])
 
 
 @router.get("")
-async def get_students(page: int = 1, limit: int = 10):
+async def get_students(
+    page: int = 1,
+    limit: int = 10,
+    education_form: Optional[str] = None,
+    level: Optional[str] = None,
+    gender: Optional[str] = None,
+    search: Optional[str] = None,
+):
 
-    students = await StudentRepository.get_all(
-        page,
-        limit,
+    # if education_form:
+    #     education = await EducationTypeRepository.find_by_variable(name=education_form)
+    #     if not education:
+    #         return JSONResponse(
+    #             status_code=status.HTTP_200_OK,
+    #             content={"data": [], "total": 0},
+    #         )
+    #     filters["education_type_code"] = education.code
+    # if level:
+    #     level = await LevelRepository.find_by_variable(name=level)
+    #     if not level:
+    #         return JSONResponse(
+    #             status_code=status.HTTP_200_OK,
+    #             content={"data": [], "total": 0},
+    #         )
+
+    students = await StudentRepository.find_students(
+        page=page,
+        limit=limit,
+        query=search,
+        gender_code=gender,
+        level_code=level,
+        education_type_code=education_form,
     )
     return students
 
@@ -40,7 +73,7 @@ async def get_by_education_year(
     return students
 
 
-@router.post("/seach")
+@router.post("/search")
 async def get_by_education_year(full_name: str):
     await asyncio.sleep(0.3)
 

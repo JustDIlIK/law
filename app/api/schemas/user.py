@@ -23,6 +23,7 @@ class SUsersGetCurrent(BaseModel):
     year_of_enter: int | None
     dob: date | None
     department_code: str | None
+    department: str | None
     email: str | None
 
     class Config:
