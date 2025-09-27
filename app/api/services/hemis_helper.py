@@ -145,15 +145,6 @@ async def add_employee(employees_list: list, outsider_list: list = []):
             gender = await GenderRepository.add_record(**employee_gender)
         emp["gender_code"] = gender.code
 
-        # Фото
-
-        employee_image = employee_element["image"]
-        if employee_image:
-            filename = uuid.uuid4()
-            filetype = employee_image.split(".")[-1]
-            emp["image_url"] = f"uploads/employee/{filename}.{filetype}"
-            await download_image(employee_image, emp["image_url"])
-
         # Академ уров
 
         employee_academic_degree = employee_element["academicDegree"]
@@ -279,7 +270,14 @@ async def add_employee(employees_list: list, outsider_list: list = []):
             emp_type = await EmployeeTypeRepository.add_record(**employee_type)
         emp["employee_type_code"] = emp_type.code
         print(f"{emp=}")
-        await EmployeeRepository.add_record(**emp)
+        is_created = await EmployeeRepository.add_record(**emp)
+        # Фото
+        employee_image = employee_element["image"]
+        if employee_image and is_created:
+            filename = uuid.uuid4()
+            filetype = employee_image.split(".")[-1]
+            emp["image_url"] = f"uploads/employee/{filename}.{filetype}"
+            await download_image(employee_image, emp["image_url"])
 
         print(f"{gender=}")
         print(f"{emp=}")
@@ -368,15 +366,6 @@ async def add_student(students_list: list):
         if not gender:
             gender = await GenderRepository.add_record(**student_gender)
         stud["gender_code"] = gender.code
-
-        # Фото
-
-        student_image = student_element["image"]
-        if student_image:
-            filename = uuid.uuid4()
-            filetype = student_image.split(".")[-1]
-            stud["image_url"] = f"uploads/students/{filename}.{filetype}"
-            await download_image(student_image, stud["image_url"])
 
         # Страна
 
@@ -671,7 +660,16 @@ async def add_student(students_list: list):
             semester = await SemesterRepository.add_record(**student_semester)
         stud["semester_code"] = semester.code
 
-        await StudentRepository.add_record(**stud)
+        is_created = await StudentRepository.add_record(**stud)
+
+        # Фото
+
+        student_image = student_element["image"]
+        if student_image and is_created:
+            filename = uuid.uuid4()
+            filetype = student_image.split(".")[-1]
+            stud["image_url"] = f"uploads/students/{filename}.{filetype}"
+            await download_image(student_image, stud["image_url"])
 
 
 async def get_student_list():
@@ -839,6 +837,3 @@ async def get_semesters():
                     name=semester["name"],
                     education_year=semester["_education_year"],
                 )
-
-
-asyncio.run(get_semesters())

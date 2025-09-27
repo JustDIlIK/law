@@ -33,7 +33,7 @@ class EmployeeRepository(BaseRepository):
             )
 
             emp = result.scalar_one_or_none()
-
+            is_created = False
             if emp:
                 result = await session.execute(select(User).where(User.id == emp.id))
                 user = result.scalar_one_or_none()
@@ -60,9 +60,10 @@ class EmployeeRepository(BaseRepository):
 
             else:
                 emp = Employee(**data)
+                is_created = True
                 session.add(emp)
             await session.commit()
-            return emp
+            return is_created
 
     @classmethod
     async def delete_employee(cls, employee_id: str):

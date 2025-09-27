@@ -33,7 +33,7 @@ class StudentRepository(BaseRepository):
                     Student.student_id_number == data["student_id_number"]
                 )
             )
-
+            is_created = False
             stud = result.scalar_one_or_none()
 
             if stud:
@@ -51,6 +51,7 @@ class StudentRepository(BaseRepository):
                     )
                     session.add(history)
                 print(f"{stud.level_code=}")
+
                 for key, value in data.items():
                     if hasattr(stud, key):
                         setattr(stud, key, value)
@@ -62,10 +63,11 @@ class StudentRepository(BaseRepository):
 
                 print(f"{stud.full_name=}")
             else:
+                is_created = True
                 stud = Student(**data)
                 session.add(stud)
             await session.commit()
-            return stud
+            return is_created
 
     @classmethod
     async def delete_student(cls, student_id: str):
