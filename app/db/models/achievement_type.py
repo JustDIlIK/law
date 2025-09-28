@@ -20,7 +20,7 @@ class AchievementType(Base):
     __tablename__ = "achievement_types"
 
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    level: Mapped[LevelEnum] = mapped_column(String(20), nullable=False)
+    type: Mapped[LevelEnum] = mapped_column(String(20), nullable=False)
     evaluation_type: Mapped[EvaluationEnum] = mapped_column(String(20), nullable=False)
     max_score: Mapped[float]
 

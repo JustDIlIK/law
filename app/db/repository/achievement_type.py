@@ -22,7 +22,7 @@ class AchievementTypeRepository(BaseRepository):
             offset = (page - 1) * limit
             query = (
                 select(cls.model)
-                .filter_by(level=education_type)
+                .filter_by(type=education_type)
                 .limit(limit)
                 .offset(offset)
                 .order_by(cls.model.id)
