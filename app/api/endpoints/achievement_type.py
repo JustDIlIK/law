@@ -29,16 +29,20 @@ async def create_achievement_type(achievement_data: AchievementTypeSchema):
 
     criterias = achievement_data.criterias
 
-    achievement = await AchievementTypeRepository.add_record(
+    new_achievement = await AchievementTypeRepository.add_record(
         **achievement_data.model_dump(exclude={"criterias"})
     )
     print(f"{criterias=}")
     if criterias is not None:
         for crit in criterias:
             crit_data = crit.model_dump(exclude_unset=True, exclude={"id"})
-            crit_data["achievement_type_id"] = achievement.id
+            crit_data["achievement_type_id"] = new_achievement.id
 
             await AchievementCriteriaRepository.add_record(**crit_data)
+
+    achievement = await AchievementTypeRepository.find_by_id(
+        new_achievement.id,
+    )
 
     return achievement
 
