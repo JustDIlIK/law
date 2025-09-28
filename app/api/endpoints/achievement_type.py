@@ -66,17 +66,22 @@ async def patch_achievement_type(record_id: int, data: AchievementTypeUpdateSche
     print(f"{data=}")
     achievement_data = data.model_dump(
         exclude_unset=True,
-        exclude={"criterias", "delete_criterias"},
+        exclude={"criterias", "deleted_criterias"},
     )
     if achievement_data:
         await AchievementTypeRepository.update_data(record_id, **achievement_data)
 
     if criterias is not None:
         for crit in criterias:
+            print(f"{crit=}")
+            print(f"{crit.id=}")
             crit_data = crit.model_dump(exclude_unset=True)
             crit_data["achievement_type_id"] = record_id
 
-            await AchievementCriteriaRepository.update_data(**crit_data)
+            if not crit.id:
+                await AchievementCriteriaRepository.add_record(**crit_data)
+            else:
+                await AchievementCriteriaRepository.update_data(**crit_data)
 
     if del_criterias is not None:
         for crit in del_criterias:
