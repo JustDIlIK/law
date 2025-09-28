@@ -25,11 +25,21 @@ async def list_achievement_types(
 
 
 @router.post("")
-async def create_achievement_type(achievemnt_data: AchievementTypeSchema):
+async def create_achievement_type(achievement_data: AchievementTypeSchema):
+
+    criterias = achievement_data.criterias
 
     achievement = await AchievementTypeRepository.add_record(
-        **achievemnt_data.model_dump()
+        **achievement_data.model_dump(exclude={"criterias"})
     )
+
+    if criterias is not None:
+        for crit in criterias:
+            crit_data = crit.model_dump(exclude_unset=True, exclude={"id"})
+            crit_data["achievement_type_id"] = achievement.id
+
+            await AchievementCriteriaRepository.add_record(**crit_data)
+
     return achievement
 
 
@@ -46,25 +56,21 @@ async def delete_achievement_type(record_id: int):
 @router.patch("/{record_id}")
 async def patch_achievement_type(record_id: int, data: AchievementTypeUpdateSchema):
 
-    criterias = data.criteria
-
-    updated = await AchievementTypeRepository.update_data(
-        record_id,
-        **data.model_dump(
-            exclude_unset=True,
-            exclude={"criteria"},
-        ),
+    criterias = data.criterias
+    print(f"{data=}")
+    achievement_data = data.model_dump(
+        exclude_unset=True,
+        exclude={"criterias"},
     )
-
-    print(f"{updated=}")
-    if not updated:
-        return {"data": [], "total": 0}
+    if achievement_data:
+        await AchievementTypeRepository.update_data(record_id, **achievement_data)
 
     if criterias is not None:
         for crit in criterias:
-            await AchievementCriteriaRepository.update_data(
-                crit.id, **crit.model_dump(exclude_unset=True, exclude={"id"})
-            )
+            crit_data = crit.model_dump(exclude_unset=True)
+            crit_data["achievement_type_id"] = record_id
+
+            await AchievementCriteriaRepository.update_data(**crit_data)
 
     achievements = await AchievementTypeRepository.get_all(
         page=1,

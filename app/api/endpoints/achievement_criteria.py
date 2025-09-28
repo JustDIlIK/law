@@ -21,3 +21,11 @@ async def create_criteria(achievement_criteria: AchievementCriteriaSchema):
         **achievement_criteria.model_dump()
     )
     return criteria
+
+
+@router.delete("{criteria_id}")
+async def delete_criteria(criteria_id: int):
+    criteria = await AchievementCriteriaRepository.remove_by_id(
+        record_id=criteria_id,
+    )
+    return criteria

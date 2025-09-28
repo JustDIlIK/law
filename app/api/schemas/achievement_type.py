@@ -5,9 +5,13 @@ from pydantic import BaseModel
 
 class AchievementCriteriaUpdateSchema(BaseModel):
     id: Optional[int] = None
-    achievement_type_id: Optional[int] = None
     name: Optional[str] = None
-    score: Optional[str] = None
+    score: Optional[float] = None
+
+
+class AchievementCriteriaAddSchema(BaseModel):
+    name: Optional[str] = None
+    score: Optional[float] = None
 
 
 class AchievementTypeSchema(BaseModel):
@@ -18,6 +22,8 @@ class AchievementTypeSchema(BaseModel):
     can_upload: bool
     description: str | None
 
+    criterias: Optional[List[AchievementCriteriaAddSchema]] = None
+
 
 class AchievementTypeUpdateSchema(BaseModel):
     name: Optional[str] = None
@@ -26,4 +32,4 @@ class AchievementTypeUpdateSchema(BaseModel):
     evaluation_type: Optional[str] = None
     max_score: Optional[int] = None
     can_upload: Optional[bool] = None
-    criteria: Optional[List[AchievementCriteriaUpdateSchema]] = None
+    criterias: Optional[List[AchievementCriteriaUpdateSchema]] = None
