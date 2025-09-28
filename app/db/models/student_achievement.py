@@ -37,6 +37,6 @@ class StudentAchievement(Base):
     student = relationship("Student", back_populates="student_achievements")
     level = relationship("Level", back_populates="student_achievements")
     year = relationship("EducationYear", back_populates="student_achievements")
-    criteria = relationship(
+    criterias = relationship(
         "AchievementCriteria", back_populates="student_achievements"
     )

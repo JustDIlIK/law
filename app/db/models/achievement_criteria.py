@@ -14,5 +14,7 @@ class AchievementCriteria(Base):
     name: Mapped[str]
     score: Mapped[int]
 
-    achievement_type = relationship("AchievementType", back_populates="criteria")
-    student_achievements = relationship("StudentAchievement", back_populates="criteria")
+    achievement_type = relationship("AchievementType", back_populates="criterias")
+    student_achievements = relationship(
+        "StudentAchievement", back_populates="criteriass"
+    )
