@@ -6,3 +6,5 @@ class AchievementTypeSchema(BaseModel):
     type: str
     evaluation_type: str
     max_score: float
+    can_upload: bool
+    description: str | None
