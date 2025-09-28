@@ -27,3 +27,9 @@ async def create_achievement_type(achievemnt_data: AchievementTypeSchema):
         **achievemnt_data.model_dump()
     )
     return achievement
+
+
+@router.delete("")
+async def delete_achievement_type(record_id: int):
+    achievement = await AchievementTypeRepository.remove_by_id(record_id=record_id)
+    return achievement

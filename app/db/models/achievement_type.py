@@ -21,7 +21,7 @@ class AchievementType(Base):
 
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     type: Mapped[LevelEnum] = mapped_column(String(20), nullable=False)
-    evaluation_type: Mapped[EvaluationEnum] = mapped_column(String(20), nullable=False)
+    evaluation_type: Mapped[EvaluationEnum] = mapped_column(String(20), nullable=True)
     max_score: Mapped[float]
     can_upload: Mapped[bool] = mapped_column(default=False)
     description: Mapped[str] = mapped_column(String(512), nullable=True)
