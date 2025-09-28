@@ -84,9 +84,9 @@ async def patch_achievement_type(record_id: int, data: AchievementTypeUpdateSche
                 await AchievementCriteriaRepository.update_data(**crit_data)
 
     if del_criterias is not None:
-        for crit in del_criterias:
+        for crit_id in del_criterias:
             await AchievementCriteriaRepository.remove_by_id(
-                record_id=crit.id,
+                record_id=crit_id,
             )
 
     achievements = await AchievementTypeRepository.find_by_id(record_id)
