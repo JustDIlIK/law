@@ -32,7 +32,7 @@ async def create_achievement_type(achievement_data: AchievementTypeSchema):
     achievement = await AchievementTypeRepository.add_record(
         **achievement_data.model_dump(exclude={"criterias"})
     )
-
+    print(f"{criterias=}")
     if criterias is not None:
         for crit in criterias:
             crit_data = crit.model_dump(exclude_unset=True, exclude={"id"})
@@ -57,10 +57,12 @@ async def delete_achievement_type(record_id: int):
 async def patch_achievement_type(record_id: int, data: AchievementTypeUpdateSchema):
 
     criterias = data.criterias
+    del_criterias = data.deleted_criterias
+
     print(f"{data=}")
     achievement_data = data.model_dump(
         exclude_unset=True,
-        exclude={"criterias"},
+        exclude={"criterias", "delete_criterias"},
     )
     if achievement_data:
         await AchievementTypeRepository.update_data(record_id, **achievement_data)
@@ -71,6 +73,12 @@ async def patch_achievement_type(record_id: int, data: AchievementTypeUpdateSche
             crit_data["achievement_type_id"] = record_id
 
             await AchievementCriteriaRepository.update_data(**crit_data)
+
+    if del_criterias is not None:
+        for crit in del_criterias:
+            await AchievementCriteriaRepository.remove_by_id(
+                record_id=crit.id,
+            )
 
     achievements = await AchievementTypeRepository.get_all(
         page=1,
