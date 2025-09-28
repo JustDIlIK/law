@@ -18,16 +18,15 @@ async def download_image(url: str, save_path: str):
         Path(file_path).write_bytes(resp.content)
 
 
-async def save_image(file, url):
-    file_name = f"{uuid4().hex}.{file.filename.split('.')[-1]}"
+async def save_image(file, url: str):
+    file_name = f"{uuid4().hex}.{file.filename.split('.')[-1]}".replace(" ", "")
 
-    file_name = file_name.replace(" ", "")
+    save_dir = os.path.join(BASE_DIR, url)
+    file_path = os.path.join(save_dir, file_name)
 
-    file_path = os.path.join(BASE_DIR, url, file_name)
-
-    Path(url).mkdir(parents=True, exist_ok=True)
+    Path(save_dir).mkdir(parents=True, exist_ok=True)
 
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
 
-    return file_path
+    return os.path.relpath(file_path, BASE_DIR)

@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from app.api.schemas.achievement_type import AchievementTypeSchema
 from app.db.repository.achievement_type import AchievementTypeRepository
 
-router = APIRouter(prefix="/types", tags=["Достижения"])
+router = APIRouter(prefix="/achievements", tags=["Достижения"])
 
 
 @router.get("")
