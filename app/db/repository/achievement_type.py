@@ -1,6 +1,4 @@
-from importlib.metadata.diagnose import inspect
-
-from sqlalchemy import select, func
+from sqlalchemy import select, func, inspect
 from sqlalchemy.orm import joinedload, ONETOMANY, selectinload
 
 from app.db.connection import async_session
