@@ -702,8 +702,8 @@ async def get_student_list():
 
 async def save_student_from_api():
     await get_semesters()
-    page = 310
-    limit = 1
+    page = 1
+    limit = 100
     index = 1
     while True:
         print(f"{page=}")
@@ -844,6 +844,3 @@ async def get_semesters():
                     name=semester["name"],
                     education_year=semester["_education_year"],
                 )
-
-
-asyncio.run(save_student_from_api())
