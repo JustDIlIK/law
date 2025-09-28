@@ -33,4 +33,4 @@ class AchievementTypeUpdateSchema(BaseModel):
     max_score: Optional[int] = None
     can_upload: Optional[bool] = None
     criterias: Optional[List[AchievementCriteriaUpdateSchema]] = None
-    deleted_criterias: Optional[list] = None
+    deleted_criterias: Optional[List[int]] = None
