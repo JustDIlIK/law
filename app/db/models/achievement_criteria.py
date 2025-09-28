@@ -7,7 +7,9 @@ from app.db.connection import Base
 class AchievementCriteria(Base):
     __tablename__ = "achievement_criteria"
 
-    achievement_type_id: Mapped[int] = mapped_column(ForeignKey("achievement_types.id"))
+    achievement_type_id: Mapped[int] = mapped_column(
+        ForeignKey("achievement_types.id", ondelete="CASCADE")
+    )
 
     title: Mapped[str]
     score: Mapped[int]

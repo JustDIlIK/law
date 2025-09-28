@@ -25,4 +25,9 @@ class AchievementType(Base):
     max_score: Mapped[float]
     can_upload: Mapped[bool] = mapped_column(default=False)
     description: Mapped[str] = mapped_column(String(512), nullable=True)
-    criteria = relationship("AchievementCriteria", back_populates="achievement_type")
+    criteria = relationship(
+        "AchievementCriteria",
+        back_populates="achievement_type",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
