@@ -31,12 +31,18 @@ class StudentAchievement(Base):
     year_code: Mapped[str] = mapped_column(
         ForeignKey("education_years.code"), nullable=False
     )
+    education_type_code: Mapped[str] = mapped_column(
+        ForeignKey("education_types.code"), nullable=True
+    )
 
     moderator_comment: Mapped[str] = mapped_column(nullable=True)
 
     student = relationship("Student", back_populates="student_achievements")
     level = relationship("Level", back_populates="student_achievements")
     year = relationship("EducationYear", back_populates="student_achievements")
+    education_type = relationship(
+        "EducationType", back_populates="student_achievements"
+    )
     criterias = relationship(
         "AchievementCriteria", back_populates="student_achievements"
     )

@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: fe1c0a346fe9
+Revision ID: b55687666f03
 Revises: 
-Create Date: 2025-09-28 02:31:26.727399
+Create Date: 2025-09-28 18:34:04.307226
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'fe1c0a346fe9'
+revision: str = 'b55687666f03'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -41,14 +41,6 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('code')
-    )
-    op.create_table('achievement_types',
-    sa.Column('name', sa.String(length=100), nullable=False),
-    sa.Column('level', sa.String(length=20), nullable=False),
-    sa.Column('evaluation_type', sa.String(length=20), nullable=False),
-    sa.Column('max_score', sa.Integer(), nullable=False),
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('citizenships',
     sa.Column('code', sa.String(length=512), nullable=False),
@@ -82,9 +74,9 @@ def upgrade() -> None:
     sa.Column('code', sa.String(length=512), nullable=False),
     sa.Column('name', sa.String(length=512), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('code')
+    sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_education_types_code'), 'education_types', ['code'], unique=True)
     op.create_table('education_years',
     sa.Column('code', sa.String(length=512), nullable=False),
     sa.Column('name', sa.String(length=512), nullable=False),
@@ -220,12 +212,14 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('code')
     )
-    op.create_table('achievement_criteria',
-    sa.Column('achievement_type_id', sa.Integer(), nullable=False),
-    sa.Column('title', sa.String(), nullable=False),
-    sa.Column('score', sa.Integer(), nullable=False),
+    op.create_table('achievement_types',
+    sa.Column('name', sa.String(length=100), nullable=False),
+    sa.Column('type', sa.String(length=512), nullable=False),
+    sa.Column('max_score', sa.Float(), nullable=False),
+    sa.Column('can_upload', sa.Boolean(), nullable=False),
+    sa.Column('description', sa.String(length=512), nullable=True),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.ForeignKeyConstraint(['achievement_type_id'], ['achievement_types.id'], ),
+    sa.ForeignKeyConstraint(['type'], ['education_types.code'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('departments',
@@ -254,11 +248,20 @@ def upgrade() -> None:
     op.create_table('semesters',
     sa.Column('code', sa.String(length=512), nullable=False),
     sa.Column('name', sa.String(length=512), nullable=False),
+    sa.Column('education_year', sa.String(length=512), nullable=True),
     sa.Column('academic_year_code', sa.String(length=512), nullable=True),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.ForeignKeyConstraint(['academic_year_code'], ['education_years.code'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('code')
+    )
+    op.create_table('achievement_criteria',
+    sa.Column('achievement_type_id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(), nullable=False),
+    sa.Column('score', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.ForeignKeyConstraint(['achievement_type_id'], ['achievement_types.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('users',
     sa.Column('login', sa.String(length=512), nullable=False),
@@ -432,9 +435,11 @@ def upgrade() -> None:
     sa.Column('added_at', sa.DateTime(), nullable=False),
     sa.Column('level_code', sa.String(length=512), nullable=False),
     sa.Column('year_code', sa.String(length=512), nullable=False),
+    sa.Column('education_type_code', sa.String(length=512), nullable=True),
     sa.Column('moderator_comment', sa.String(), nullable=True),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.ForeignKeyConstraint(['achievement_criteria_id'], ['achievement_criteria.id'], ),
+    sa.ForeignKeyConstraint(['education_type_code'], ['education_types.code'], ),
     sa.ForeignKeyConstraint(['level_code'], ['levels.code'], ),
     sa.ForeignKeyConstraint(['student_id_number'], ['students.student_id_number'], ),
     sa.ForeignKeyConstraint(['year_code'], ['education_years.code'], ),
@@ -515,10 +520,11 @@ def downgrade() -> None:
     op.drop_table('employees')
     op.drop_index(op.f('ix_users_external_id'), table_name='users')
     op.drop_table('users')
+    op.drop_table('achievement_criteria')
     op.drop_table('semesters')
     op.drop_table('groups')
     op.drop_table('departments')
-    op.drop_table('achievement_criteria')
+    op.drop_table('achievement_types')
     op.drop_table('universities')
     op.drop_table('student_types')
     op.drop_table('student_statuses')
@@ -539,12 +545,12 @@ def downgrade() -> None:
     op.drop_table('employee_types')
     op.drop_table('employee_statuses')
     op.drop_table('education_years')
+    op.drop_index(op.f('ix_education_types_code'), table_name='education_types')
     op.drop_table('education_types')
     op.drop_table('education_languages')
     op.drop_table('education_forms')
     op.drop_table('countries')
     op.drop_table('citizenships')
-    op.drop_table('achievement_types')
     op.drop_table('accommodations')
     op.drop_table('academic_ranks')
     op.drop_table('academic_degrees')

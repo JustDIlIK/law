@@ -7,6 +7,16 @@ from app.db.repository.student_achievement import StudentAchievementRepository
 router = APIRouter(prefix="/students-achievements", tags=["Достижения студентов"])
 
 
+@router.get("")
+async def get_all_achievements(page: int = 1, limit: int = 15):
+    achievements = await StudentAchievementRepository.get_all(
+        page,
+        limit,
+    )
+
+    return achievements
+
+
 @router.post("/student/{student_id}")
 async def add_student_achievement(
     student_id_number: int,
