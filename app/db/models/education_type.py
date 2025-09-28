@@ -1,5 +1,5 @@
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.connection import Base
 
@@ -7,5 +7,9 @@ from app.db.connection import Base
 class EducationType(Base):
     __tablename__ = "education_types"
 
-    code: Mapped[str] = mapped_column(String(512), unique=True)
+    code: Mapped[str] = mapped_column(
+        String(512), unique=True, nullable=False, index=True
+    )
     name: Mapped[str] = mapped_column(String(512), nullable=False)
+
+    achievement_types = relationship("AchievementType", back_populates="education_type")
