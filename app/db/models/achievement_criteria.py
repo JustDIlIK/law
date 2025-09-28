@@ -16,5 +16,5 @@ class AchievementCriteria(Base):
 
     achievement_type = relationship("AchievementType", back_populates="criterias")
     student_achievements = relationship(
-        "StudentAchievement", back_populates="criteriass"
+        "StudentAchievement", back_populates="criterias"
     )
