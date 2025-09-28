@@ -1,17 +1,30 @@
+from datetime import datetime
+
 from fastapi import APIRouter, UploadFile, HTTPException
+from starlette.responses import JSONResponse
 
 from app.api.services.image import save_image
 from app.config.config import settings
+from app.db.repository.achievement_criteria import AchievementCriteriaRepository
 from app.db.repository.student_achievement import StudentAchievementRepository
 
 router = APIRouter(prefix="/students-achievements", tags=["Достижения студентов"])
 
 
 @router.get("")
-async def get_all_achievements(page: int = 1, limit: int = 15):
-    achievements = await StudentAchievementRepository.get_all(
+async def get_all_achievements(
+    page: int = 1,
+    limit: int = 15,
+    education_year_code: str = "",
+    education_type_code: str = "",
+    level_code: str = "",
+):
+    achievements = await StudentAchievementRepository.get_with_achievements(
         page,
         limit,
+        education_year_code=education_year_code,
+        education_type_code=education_type_code,
+        level_code=level_code,
     )
 
     return achievements
@@ -19,19 +32,36 @@ async def get_all_achievements(page: int = 1, limit: int = 15):
 
 @router.post("/student/{student_id}")
 async def add_student_achievement(
-    student_id_number: int,
+    student_id_number: str,
     achievement_criteria_id: int,
     education_year_code: str,
+    education_type_code: str,
+    level_code: str,
     document: UploadFile | None = None,
 ):
     if document:
         document = await save_image(document, settings.DOCUMENT_URL)
 
+    achievement_criteria = await AchievementCriteriaRepository.find_by_id(
+        achievement_criteria_id
+    )
+
+    if not achievement_criteria:
+        return JSONResponse(content="Не найдено")
+
+    print(f"{achievement_criteria.achievement_type.can_upload=}")
+
+    if not achievement_criteria.achievement_type.can_upload:
+        return JSONResponse(content="Нельзя загружать данные на этот критерий")
+
     achievement = await StudentAchievementRepository.add_record(
         student_id_number=student_id_number,
         achievement_criteria_id=achievement_criteria_id,
         education_year_code=education_year_code,
+        education_type_code=education_type_code,
         document_url=document,
+        added_at=datetime.now(),
+        level_code=level_code,
     )
     return achievement
 

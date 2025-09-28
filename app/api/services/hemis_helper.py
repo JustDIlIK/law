@@ -783,6 +783,7 @@ async def save_student_from_api():
                         education_type_code=data.get("educationType")["code"],
                         education_year_code=gpa["educationYear"]["code"],
                         added_at=datetime.fromtimestamp(gpa["created_at"]),
+                        is_verified=True,
                     )
 
             for subj in data.get("subjects", []):
