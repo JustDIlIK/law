@@ -5,3 +5,4 @@ class AchievementTypeSchema(BaseModel):
     name: str
     level: str
     evaluation_type: str
+    max_score: float

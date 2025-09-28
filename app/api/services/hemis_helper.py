@@ -818,6 +818,7 @@ async def save_student_from_api():
 
 async def get_semesters():
     async with AsyncClient() as client:
+        print(f"{settings.HEMIS_TOKEN=}")
         response = await client.get(
             url="https://student.proacademy.uz/rest/v1/data/semester-list",
             headers={"Authorization": f"Bearer {settings.HEMIS_TOKEN}"},

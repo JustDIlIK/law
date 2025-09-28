@@ -22,6 +22,6 @@ class AchievementType(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     level: Mapped[LevelEnum] = mapped_column(String(20), nullable=False)
     evaluation_type: Mapped[EvaluationEnum] = mapped_column(String(20), nullable=False)
-    max_score: Mapped[int]
+    max_score: Mapped[float]
 
     criteria = relationship("AchievementCriteria", back_populates="achievement_type")
