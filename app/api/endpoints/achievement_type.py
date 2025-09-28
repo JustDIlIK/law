@@ -89,8 +89,5 @@ async def patch_achievement_type(record_id: int, data: AchievementTypeUpdateSche
                 record_id=crit.id,
             )
 
-    achievements = await AchievementTypeRepository.get_all(
-        page=1,
-        limit=100,
-    )
+    achievements = await AchievementTypeRepository.find_by_id(record_id)
     return achievements
