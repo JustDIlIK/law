@@ -1,6 +1,9 @@
 from fastapi import APIRouter
 
-from app.api.schemas.achievement_type import AchievementTypeSchema
+from app.api.schemas.achievement_type import (
+    AchievementTypeSchema,
+    AchievementTypeUpdateSchema,
+)
 from app.db.repository.achievement_type import AchievementTypeRepository
 
 router = APIRouter(prefix="/achievements", tags=["Достижения"])
@@ -29,7 +32,18 @@ async def create_achievement_type(achievemnt_data: AchievementTypeSchema):
     return achievement
 
 
-@router.delete("")
+@router.delete("/record_id")
 async def delete_achievement_type(record_id: int):
     achievement = await AchievementTypeRepository.remove_by_id(record_id=record_id)
     return achievement
+
+
+@router.patch("/{record_id}")
+async def patch_achievement_type(record_id: int, data: AchievementTypeUpdateSchema):
+    updated = await AchievementTypeRepository.update_data(
+        record_id, **data.model_dump(exclude_unset=True)
+    )
+    print(f"{updated=}")
+    if not updated:
+        return {"data": []}
+    return updated

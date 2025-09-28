@@ -20,5 +20,4 @@ async def create_criteria(achievement_criteria: AchievementCriteriaSchema):
     criteria = await AchievementCriteriaRepository.add_record(
         **achievement_criteria.model_dump()
     )
-
     return criteria

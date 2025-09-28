@@ -107,6 +107,8 @@ class BaseRepository:
     @classmethod
     async def update_data(cls, id: int, **data):
         async with async_session() as session:
+            print(f"{id=}")
+            print(f"{data=}")
             query = (
                 update(cls.model).filter_by(id=id).values(**data).returning(cls.model)
             )
