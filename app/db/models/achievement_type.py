@@ -23,5 +23,6 @@ class AchievementType(Base):
     type: Mapped[LevelEnum] = mapped_column(String(20), nullable=False)
     evaluation_type: Mapped[EvaluationEnum] = mapped_column(String(20), nullable=False)
     max_score: Mapped[float]
-
+    can_upload: Mapped[bool] = mapped_column(default=False)
+    description: Mapped[str] = mapped_column(String(512), nullable=True)
     criteria = relationship("AchievementCriteria", back_populates="achievement_type")
