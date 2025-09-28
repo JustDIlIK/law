@@ -32,7 +32,7 @@ async def create_achievement_type(achievemnt_data: AchievementTypeSchema):
     return achievement
 
 
-@router.delete("/record_id")
+@router.delete("/{record_id}")
 async def delete_achievement_type(record_id: int):
     achievement = await AchievementTypeRepository.remove_by_id(record_id=record_id)
     return achievement
