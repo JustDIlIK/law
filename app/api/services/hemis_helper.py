@@ -702,8 +702,8 @@ async def get_student_list():
 
 async def save_student_from_api():
     await get_semesters()
-    page = 1
-    limit = 100
+    page = 300
+    limit = 1
     index = 1
     while True:
         print(f"{page=}")
@@ -731,8 +731,10 @@ async def save_student_from_api():
             for gpa in data.get("studentGpas", []):
 
                 gpa_criteria = await AchievementTypeRepository.find_by_variable(
-                    name="GPA"
+                    name="GPA",
+                    type=gpa["level"]["code"],
                 )
+                print(f"GPA - {gpa_criteria.id}")
                 if not gpa_criteria:
                     break
 

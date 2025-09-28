@@ -13,22 +13,6 @@ class BaseRepository:
             offset = (page - 1) * limit
             query = select(cls.model).limit(limit).offset(offset).order_by(cls.model.id)
 
-            mapper = inspect(cls.model)
-            relationships = mapper.relationships
-            fields = relationships.keys()
-            load_options = []
-            for field in fields:
-                rel_property = relationships[field]
-                direction = rel_property.direction
-                use_list = rel_property.uselist
-                if direction == ONETOMANY or use_list is False:
-                    loader = selectinload(getattr(cls.model, field))
-                else:
-                    loader = joinedload(getattr(cls.model, field))
-
-                load_options.append(loader)
-
-            query = query.options(*load_options)
             result = await session.execute(query)
             result = result.unique().scalars().all()
 
