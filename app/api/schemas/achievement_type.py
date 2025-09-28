@@ -1,6 +1,13 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
+
+
+class AchievementCriteriaUpdateSchema(BaseModel):
+    id: Optional[int] = None
+    achievement_type_id: Optional[int] = None
+    name: Optional[str] = None
+    score: Optional[str] = None
 
 
 class AchievementTypeSchema(BaseModel):
@@ -19,3 +26,4 @@ class AchievementTypeUpdateSchema(BaseModel):
     evaluation_type: Optional[str] = None
     max_score: Optional[int] = None
     can_upload: Optional[bool] = None
+    criteria: Optional[List[AchievementCriteriaUpdateSchema]] = None

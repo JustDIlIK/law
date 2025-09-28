@@ -4,6 +4,7 @@ from app.api.schemas.achievement_type import (
     AchievementTypeSchema,
     AchievementTypeUpdateSchema,
 )
+from app.db.repository.achievement_criteria import AchievementCriteriaRepository
 from app.db.repository.achievement_type import AchievementTypeRepository
 
 router = APIRouter(prefix="/achievements", tags=["Достижения"])
@@ -34,16 +35,39 @@ async def create_achievement_type(achievemnt_data: AchievementTypeSchema):
 
 @router.delete("/{record_id}")
 async def delete_achievement_type(record_id: int):
-    achievement = await AchievementTypeRepository.remove_by_id(record_id=record_id)
-    return achievement
+    await AchievementTypeRepository.remove_by_id(record_id=record_id)
+    achievements = await AchievementTypeRepository.get_all(
+        page=1,
+        limit=100,
+    )
+    return achievements
 
 
 @router.patch("/{record_id}")
 async def patch_achievement_type(record_id: int, data: AchievementTypeUpdateSchema):
+
+    criterias = data.criteria
+
     updated = await AchievementTypeRepository.update_data(
-        record_id, **data.model_dump(exclude_unset=True)
+        record_id,
+        **data.model_dump(
+            exclude_unset=True,
+            exclude={"criteria"},
+        ),
     )
+
     print(f"{updated=}")
     if not updated:
-        return {"data": []}
-    return updated
+        return {"data": [], "total": 0}
+
+    if criterias is not None:
+        for crit in criterias:
+            await AchievementCriteriaRepository.update_data(
+                crit.id, **crit.model_dump(exclude_unset=True, exclude={"id"})
+            )
+
+    achievements = await AchievementTypeRepository.get_all(
+        page=1,
+        limit=100,
+    )
+    return achievements

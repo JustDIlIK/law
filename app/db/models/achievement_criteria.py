@@ -11,7 +11,7 @@ class AchievementCriteria(Base):
         ForeignKey("achievement_types.id", ondelete="CASCADE")
     )
 
-    title: Mapped[str]
+    name: Mapped[str]
     score: Mapped[int]
 
     achievement_type = relationship("AchievementType", back_populates="criteria")
