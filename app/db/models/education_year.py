@@ -11,4 +11,6 @@ class EducationYear(Base):
     name: Mapped[str] = mapped_column(String(512), nullable=False)
     current: Mapped[bool] = mapped_column(default=False)
 
-    student_achievements = relationship("StudentAchievement", back_populates="year")
+    student_achievements = relationship(
+        "StudentAchievement", back_populates="education_year"
+    )

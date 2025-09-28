@@ -21,9 +21,7 @@ async def get_all_achievements(page: int = 1, limit: int = 15):
 async def add_student_achievement(
     student_id_number: int,
     achievement_criteria_id: int,
-    semester_code: str,
-    education_year: str,
-    value: int,
+    education_year_code: str,
     document: UploadFile | None = None,
 ):
     if document:
@@ -32,9 +30,7 @@ async def add_student_achievement(
     achievement = await StudentAchievementRepository.add_record(
         student_id_number=student_id_number,
         achievement_criteria_id=achievement_criteria_id,
-        semester_code=semester_code,
-        education_year=education_year,
-        value=value,
+        education_year_code=education_year_code,
         document_url=document,
     )
     return achievement
@@ -44,11 +40,11 @@ async def add_student_achievement(
 async def get_student_rating(
     student_id_number: int,
     year_code: str,
-    semester_code: str,
+    education_year_code: str,
 ):
     result = await StudentAchievementRepository.student_rating(
         student_id_number=student_id_number,
-        semester_code=semester_code,
+        education_year_code=education_year_code,
         year_code=year_code,
     )
 

@@ -702,10 +702,11 @@ async def get_student_list():
 
 async def save_student_from_api():
     await get_semesters()
-    page = 1
-    limit = 100
-
+    page = 310
+    limit = 1
+    index = 1
     while True:
+        print(f"{page=}")
         students = await StudentRepository.get_all(
             page,
             limit,
@@ -714,6 +715,9 @@ async def save_student_from_api():
         if not students:
             break
         for student in students:
+            print(f"{index=}")
+
+            index += 1
 
             print(f"{student.student_id_number=}")
             data = await fetch_student(
@@ -754,7 +758,8 @@ async def save_student_from_api():
                     achievement_criteria_id=criteria_id,
                     student_id_number=student.student_id_number,
                     level_code=gpa["level"]["code"],
-                    year_code=gpa["educationYear"]["code"],
+                    education_year_code=gpa["educationYear"]["code"],
+                    education_type_code=data.get("educationType")["code"],
                     value=gpa_score,
                 )
                 # print(
@@ -775,7 +780,8 @@ async def save_student_from_api():
                         document_url=None,
                         value=gpa_score,
                         level_code=gpa["level"]["code"],
-                        year_code=gpa["educationYear"]["code"],
+                        education_type_code=data.get("educationType")["code"],
+                        education_year_code=gpa["educationYear"]["code"],
                         added_at=datetime.fromtimestamp(gpa["created_at"]),
                     )
 
@@ -838,3 +844,6 @@ async def get_semesters():
                     name=semester["name"],
                     education_year=semester["_education_year"],
                 )
+
+
+asyncio.run(save_student_from_api())

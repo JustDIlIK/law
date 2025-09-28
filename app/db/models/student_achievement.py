@@ -19,7 +19,7 @@ class StudentAchievement(Base):
     document_url: Mapped[str] = mapped_column(nullable=True)
     is_verified: Mapped[bool] = mapped_column(default=False)
 
-    value: Mapped[float]
+    value: Mapped[float] = mapped_column(nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     added_at: Mapped[datetime] = mapped_column()
@@ -28,7 +28,7 @@ class StudentAchievement(Base):
         ForeignKey("levels.code"),
         nullable=False,
     )
-    year_code: Mapped[str] = mapped_column(
+    education_year_code: Mapped[str] = mapped_column(
         ForeignKey("education_years.code"), nullable=False
     )
     education_type_code: Mapped[str] = mapped_column(
@@ -39,7 +39,9 @@ class StudentAchievement(Base):
 
     student = relationship("Student", back_populates="student_achievements")
     level = relationship("Level", back_populates="student_achievements")
-    year = relationship("EducationYear", back_populates="student_achievements")
+    education_year = relationship(
+        "EducationYear", back_populates="student_achievements"
+    )
     education_type = relationship(
         "EducationType", back_populates="student_achievements"
     )
