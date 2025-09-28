@@ -49,10 +49,11 @@ async def create_achievement_type(achievement_data: AchievementTypeSchema):
 
 @router.delete("/{record_id}")
 async def delete_achievement_type(record_id: int):
-    await AchievementTypeRepository.remove_by_id(record_id=record_id)
+    deleted_achievement = await AchievementTypeRepository.remove_by_id(
+        record_id=record_id
+    )
     achievements = await AchievementTypeRepository.get_all(
-        page=1,
-        limit=100,
+        page=1, limit=100, education_type=deleted_achievement.type
     )
     return achievements
 
