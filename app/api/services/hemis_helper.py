@@ -708,7 +708,7 @@ async def get_student_list():
 
 async def save_student_from_api():
     await get_semesters()
-    page = 10
+    page = 1
     limit = 100
     index = 1
     while True:
@@ -724,7 +724,6 @@ async def save_student_from_api():
             print(f"{index=}")
 
             index += 1
-            time.sleep(1)
             print(f"{student.student_id_number=}")
             while True:
                 data = await fetch_student(
