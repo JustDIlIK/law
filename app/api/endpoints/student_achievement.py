@@ -86,11 +86,6 @@ async def add_student_achievement(
     if not achievement_criteria:
         return JSONResponse(content="Не найдено")
 
-    print(f"{achievement_criteria.achievement_type.can_upload=}")
-
-    if not achievement_criteria.achievement_type.can_upload:
-        return JSONResponse(content="Нельзя загружать данные на этот критерий")
-
     status_pending = await StatusRepository.find_by_variable(title="pending")
 
     achievement = await StudentAchievementRepository.add_record(

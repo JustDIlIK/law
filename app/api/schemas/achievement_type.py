@@ -18,7 +18,6 @@ class AchievementTypeSchema(BaseModel):
     name: str
     type: str
     max_score: float
-    can_upload: bool
     description: str | None
 
     criterias: Optional[List[AchievementCriteriaAddSchema]] = None
@@ -29,6 +28,5 @@ class AchievementTypeUpdateSchema(BaseModel):
     description: Optional[str] = None
     type: Optional[str] = None
     max_score: Optional[int] = None
-    can_upload: Optional[bool] = None
     criterias: Optional[List[AchievementCriteriaUpdateSchema]] = None
     deleted_criterias: Optional[List[int]] = None
