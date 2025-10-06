@@ -6,6 +6,7 @@ from starlette.responses import JSONResponse
 from app.api.services.image import save_image
 from app.config.config import settings
 from app.db.repository.achievement_criteria import AchievementCriteriaRepository
+from app.db.repository.status import StatusRepository
 from app.db.repository.student_achievement import StudentAchievementRepository
 
 router = APIRouter(prefix="/students-achievements", tags=["Достижения студентов"])
@@ -18,6 +19,8 @@ async def get_all_achievements(
     education_year_code: str = "",
     education_type_code: str = "",
     level_code: str = "",
+    search: str = "",
+    gender: str = "",
 ):
     achievements = await StudentAchievementRepository.get_with_achievements(
         page,
@@ -25,6 +28,32 @@ async def get_all_achievements(
         education_year_code=education_year_code,
         education_type_code=education_type_code,
         level_code=level_code,
+        search=search,
+        gender=gender,
+    )
+
+    return achievements
+
+
+@router.get("/check")
+async def get_all_achievements(
+    page: int = 1,
+    limit: int = 15,
+    education_year_code: str = "",
+    education_type_code: str = "",
+    level_code: str = "",
+    search: str = "",
+    gender: str = "",
+):
+    achievements = await StudentAchievementRepository.get_with_achievements(
+        page,
+        limit,
+        education_year_code=education_year_code,
+        education_type_code=education_type_code,
+        level_code=level_code,
+        search=search,
+        gender=gender,
+        is_verified=False,
     )
 
     return achievements
@@ -37,7 +66,7 @@ async def add_student_achievement(
     education_year_code: str,
     education_type_code: str,
     level_code: str,
-    document: UploadFile | None = None,
+    document: UploadFile,
 ):
     if document:
         document = await save_image(document, settings.DOCUMENT_URL)
@@ -54,6 +83,8 @@ async def add_student_achievement(
     if not achievement_criteria.achievement_type.can_upload:
         return JSONResponse(content="Нельзя загружать данные на этот критерий")
 
+    status_pending = await StatusRepository.find_by_variable(title="pending")
+
     achievement = await StudentAchievementRepository.add_record(
         student_id_number=student_id_number,
         achievement_criteria_id=achievement_criteria_id,
@@ -62,47 +93,45 @@ async def add_student_achievement(
         document_url=document,
         added_at=datetime.now(),
         level_code=level_code,
+        status=status_pending.id,
+        value=achievement_criteria.score,
     )
+    print(achievement)
     return achievement
 
 
 @router.get("/rating/{student_id}")
 async def get_student_rating(
-    student_id_number: int,
-    year_code: str,
-    education_year_code: str,
+    student_id_number: str,
 ):
     result = await StudentAchievementRepository.student_rating(
         student_id_number=student_id_number,
-        education_year_code=education_year_code,
-        year_code=year_code,
     )
 
     return result
 
 
-@router.put("/verify/{student_achievement_id}")
+@router.put("/verify")
 async def verify_document(
-    student_achievement_id: int,
+    id: int,
     approved: bool,
     moderator_comment: str | None = None,
 ):
-    student_achievement = await StudentAchievementRepository.find_by_id(
-        student_achievement_id
-    )
-
+    student_achievement = await StudentAchievementRepository.find_by_id(id)
     if not student_achievement:
         raise HTTPException(status_code=404, detail="Запись не найдена")
+    if student_achievement.is_verified:
+        raise HTTPException(status_code=404, detail="Уже обработана")
 
-    if approved:
-        await StudentAchievementRepository.update_data(
-            student_achievement_id,
-            is_verified=True,
-        )
-    else:
-        await StudentAchievementRepository.update_data(
-            student_achievement_id,
-            moderator_comment=moderator_comment,
-        )
+    status = await StatusRepository.find_by_variable(
+        title="succeed" if approved else "failed"
+    )
+
+    await StudentAchievementRepository.update_data(
+        id=id,
+        is_verified=True,
+        moderator_comment=moderator_comment,
+        status=status.id,
+    )
 
     return student_achievement

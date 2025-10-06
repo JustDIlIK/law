@@ -12,9 +12,9 @@ router = APIRouter(prefix="/achievements", tags=["Достижения"])
 
 @router.get("")
 async def list_achievement_types(
+    education_type: str,
     page: int = 1,
     limit: int = 50,
-    education_type: str = "",
 ):
     achievements = await AchievementTypeRepository.get_all(
         page,

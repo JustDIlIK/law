@@ -1,6 +1,8 @@
+from .education_semester import EducationSemester
 from .gender import Gender
 from .country import Country
 from .citizenship import Citizenship
+from .gpa import GPA
 from .permission import Permission
 from .student_status import StudentStatus
 from .education_form import EducationForm
@@ -38,15 +40,18 @@ from .student_history import StudentHistory
 from .achievement_type import AchievementType
 from .achievement_criteria import AchievementCriteria
 from .student_achievement import StudentAchievement
+from .status import Status
 
 __all__ = [
     # справочники (общие)
+    "Status",
     "Gender",
     "Country",
     "Citizenship",
     "StudentStatus",
     "EducationForm",
     "EducationType",
+    "EducationSemester",
     "PaymentForm",
     "StudentType",
     "SocialCategory",
@@ -54,6 +59,7 @@ __all__ = [
     "StructureType",
     "LocalityType",
     "EducationLanguage",
+    "GPA",
     "Level",
     # справочники (для сотрудников)
     "AcademicDegree",

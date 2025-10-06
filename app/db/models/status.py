@@ -1,0 +1,14 @@
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.db.connection import Base
+
+
+class Status(Base):
+    __tablename__ = "statuses"
+
+    title: Mapped[str] = mapped_column(String(128))
+
+    student_achievements = relationship(
+        "StudentAchievement", back_populates="current_status"
+    )

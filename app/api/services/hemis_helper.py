@@ -33,6 +33,7 @@ from app.db.repository.employee_type import EmployeeTypeRepository
 from app.db.repository.employment_form import EmploymentFormRepository
 from app.db.repository.employment_staff import EmploymentStaffRepository
 from app.db.repository.gender import GenderRepository
+from app.db.repository.gpa import GPARepository
 from app.db.repository.group import GroupRepository
 from app.db.repository.level import LevelRepository
 from app.db.repository.locality_type import LocalityTypeRepository
@@ -43,6 +44,7 @@ from app.db.repository.semester import SemesterRepository
 from app.db.repository.social_category import SocialCategoryRepository
 from app.db.repository.specialty import SpecialtyRepository
 from app.db.repository.staff_position import StaffPositionRepository
+from app.db.repository.status import StatusRepository
 from app.db.repository.structure_type import StructureTypeRepository
 from app.db.repository.student import StudentRepository
 from app.db.repository.student_achievement import StudentAchievementRepository
@@ -702,8 +704,8 @@ async def get_student_list():
 
 async def save_student_from_api():
     await get_semesters()
-    page = 300
-    limit = 1
+    page = 10
+    limit = 100
     index = 1
     while True:
         print(f"{page=}")
@@ -726,67 +728,43 @@ async def save_student_from_api():
                 student_hemis_id=student.external_id,
             )
             data = data["data"]
-            print(data.get("studentGpas", []))
 
             for gpa in data.get("studentGpas", []):
 
-                gpa_criteria = await AchievementTypeRepository.find_by_variable(
-                    name="GPA",
-                    type=gpa["level"]["code"],
-                )
-                print(f"GPA - {gpa_criteria.id}")
-                if not gpa_criteria:
-                    break
-
-                gpa_criterias = (
-                    await AchievementCriteriaRepository.find_all_by_variable(
-                        achievement_type_id=gpa_criteria.id
-                    )
-                )
-
-                gpa_criterias = gpa_criterias["data"]
-                gpa_score = math.ceil(float(gpa["gpa"]))
-                criteria_id = None
-
-                for gpa_scores in gpa_criterias:
-                    if gpa_scores.score == gpa_score:
-                        criteria_id = gpa_scores.id
-                        break
-
-                if not criteria_id:
-                    break
-
-                current_student = await StudentAchievementRepository.find_by_variable(
-                    achievement_criteria_id=criteria_id,
+                gpa_criteria = await GPARepository.find_by_variable(
+                    education_type_code=data["educationType"]["code"],
                     student_id_number=student.student_id_number,
-                    level_code=gpa["level"]["code"],
                     education_year_code=gpa["educationYear"]["code"],
-                    education_type_code=data.get("educationType")["code"],
-                    value=gpa_score,
                 )
-                # print(
-                #     f"{current_student.added_at=} {datetime.fromtimestamp(gpa["created_at"])=}"
-                # )
-                # print(
-                #     f"{current_student.added_at == datetime.fromtimestamp(gpa["created_at"])=}"
-                # )
-                if (
-                    not current_student
-                    or current_student.added_at
-                    != datetime.fromtimestamp(gpa["created_at"])
+                if student.student_id_number == "400241200227":
+                    print(f"Here")
+                if gpa_criteria and gpa_criteria.added_at == datetime.fromtimestamp(
+                    gpa["created_at"]
                 ):
 
-                    await StudentAchievementRepository.add_record(
-                        student_id_number=student.student_id_number,
-                        achievement_criteria_id=criteria_id,
-                        document_url=None,
-                        value=gpa_score,
-                        level_code=gpa["level"]["code"],
-                        education_type_code=data.get("educationType")["code"],
-                        education_year_code=gpa["educationYear"]["code"],
-                        added_at=datetime.fromtimestamp(gpa["created_at"]),
-                        is_verified=True,
+                    print(f"{student.student_id_number}")
+                    print("Already added")
+                    continue
+                print(f"{float(gpa["gpa"])=}")
+
+                education_year = await EducationYearRepository.find_by_variable(
+                    code=gpa["educationYear"]["code"],
+                )
+
+                if not education_year:
+                    await EducationYearRepository.add_record(
+                        code=gpa["educationYear"]["code"],
+                        name=f"{gpa["educationYear"]["code"]}-{int(gpa["educationYear"]["code"]) + 1}",
                     )
+
+                await GPARepository.add_record(
+                    student_id_number=student.student_id_number,
+                    value=float(gpa["gpa"]),
+                    level_code=gpa["level"]["code"],
+                    education_type_code=data.get("educationType")["code"],
+                    education_year_code=gpa["educationYear"]["code"],
+                    added_at=datetime.fromtimestamp(gpa["created_at"]),
+                )
 
             for subj in data.get("subjects", []):
                 current_subject = await StudentSubjectRepository.find_by_variable(
@@ -847,3 +825,6 @@ async def get_semesters():
                     name=semester["name"],
                     education_year=semester["_education_year"],
                 )
+
+
+# asyncio.run(save_student_from_api())

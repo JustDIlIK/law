@@ -14,3 +14,7 @@ class EducationYear(Base):
     student_achievements = relationship(
         "StudentAchievement", back_populates="education_year"
     )
+    semesters = relationship(
+        "EducationSemester",
+        back_populates="education_year",
+    )
