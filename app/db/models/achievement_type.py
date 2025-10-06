@@ -22,7 +22,12 @@ class AchievementType(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
-    education_type = relationship("EducationType", back_populates="achievement_types")
+    education_type = relationship(
+        "EducationType",
+        back_populates="achievement_types",
+        primaryjoin="foreign(AchievementType.type) == EducationType.code",
+        foreign_keys="[AchievementType.type]",
+    )
 
     def __str__(self):
         return self.name

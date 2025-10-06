@@ -12,7 +12,11 @@ class EducationType(Base):
     )
     name: Mapped[str] = mapped_column(String(512), nullable=False)
 
-    achievement_types = relationship("AchievementType", back_populates="education_type")
+    achievement_types = relationship(
+        "AchievementType",
+        back_populates="education_type",
+        primaryjoin="EducationType.code == foreign(AchievementType.type)",
+    )
     student_achievements = relationship(
         "StudentAchievement", back_populates="education_type"
     )

@@ -15,7 +15,7 @@ def start_scheduler():
     if not scheduler.running:
         # scheduler.add_job(get_employee_list, "interval", seconds=1, max_instances=1)
         # scheduler.add_job(get_student_list, "interval", seconds=1, max_instances=1)
-        scheduler.add_job(save_student_from_api, "interval", seconds=1, max_instances=1)
+        # scheduler.add_job(save_student_from_api, "interval", seconds=1, max_instances=1)
         scheduler.start()
         print("✅ Планировщик запущен")
 

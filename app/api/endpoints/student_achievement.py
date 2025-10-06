@@ -73,6 +73,7 @@ async def add_student_achievement(
     achievement_criteria_id: int,
     education_year_code: str,
     education_type_code: str,
+    education_semester_code: str,
     level_code: str,
     document: UploadFile | None = None,
 ):
@@ -93,6 +94,7 @@ async def add_student_achievement(
         achievement_criteria_id=achievement_criteria_id,
         education_year_code=education_year_code,
         education_type_code=education_type_code,
+        education_semester_code=education_semester_code,
         document_url=document,
         added_at=datetime.now(),
         level_code=level_code,
