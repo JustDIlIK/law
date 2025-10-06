@@ -84,24 +84,31 @@ class StudentAchievementRepository(BaseRepository):
     async def student_rating(
         cls,
         student_id_number: str,
+        status: str,
+        page: int = 1,
+        limit: int = 15,
     ):
+        offset = (page - 1) * limit
+
         async with async_session() as session:
             query = (
                 select(Student)
                 .filter_by(student_id_number=student_id_number)
                 .join(Student.student_achievements)
                 .options(selectinload(Student.student_achievements))
+                .options(selectinload(Student.student_achievements))
+                .offset(offset)
+                .limit(limit)
             )
             result = await session.execute(query)
             student = result.scalar()
-            print(student.student_achievements)
+            print(student)
             data = []
 
             total_sum = 0
             student_achievements_storage = {}
             for student_achievement in student.student_achievements:
-                status = await StatusRepository.find_by_variable(title="succeed")
-
+                status = await StatusRepository.find_by_variable(title=status)
                 if (
                     student_achievement.status != status.id
                     or not student_achievement.is_verified

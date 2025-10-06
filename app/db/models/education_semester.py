@@ -11,10 +11,6 @@ class EducationSemester(Base):
     code: Mapped[str] = mapped_column(String(512), unique=True)
     name: Mapped[str] = mapped_column(String(512), nullable=False)
 
-    student_achievements = relationship(
-        "StudentAchievement", back_populates="education_semester"
-    )
-
     education_year = relationship(
         "EducationYear",
         back_populates="semesters",

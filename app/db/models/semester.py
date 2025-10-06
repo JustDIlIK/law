@@ -11,8 +11,8 @@ class Semester(Base):
     name: Mapped[str] = mapped_column(String(512), nullable=False)
     education_year: Mapped[str] = mapped_column(String(512), nullable=True)
 
-    academic_year_code: Mapped[str] = mapped_column(
-        ForeignKey("education_years.code"), nullable=True
+    student_achievements = relationship(
+        "StudentAchievement", back_populates="semesters"
     )
 
     def __str__(self):

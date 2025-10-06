@@ -32,7 +32,7 @@ class StudentAchievement(Base):
         ForeignKey("education_years.code"), nullable=False
     )
     education_semester_code: Mapped[str] = mapped_column(
-        ForeignKey("education_semesters.code"), nullable=True
+        ForeignKey("semesters.code"), nullable=True
     )
     education_type_code: Mapped[str] = mapped_column(
         ForeignKey("education_types.code"), nullable=True
@@ -55,12 +55,12 @@ class StudentAchievement(Base):
     education_type = relationship(
         "EducationType", back_populates="student_achievements"
     )
-    education_semester = relationship(
-        "EducationSemester", back_populates="student_achievements"
-    )
+
     criterias = relationship(
         "AchievementCriteria", back_populates="student_achievements"
     )
+
+    semesters = relationship("Semester", back_populates="student_achievements")
 
     def __str__(self):
         return self.id

@@ -7,6 +7,7 @@ from app.api.services.image import save_image
 from app.config.config import settings
 from app.db.repository.achievement_criteria import AchievementCriteriaRepository
 from app.db.repository.gpa import GPARepository
+from app.db.repository.semester import SemesterRepository
 from app.db.repository.status import StatusRepository
 from app.db.repository.student_achievement import StudentAchievementRepository
 
@@ -67,13 +68,13 @@ async def get_all_achievements(
     return achievements
 
 
-@router.post("/student/{student_id}")
+@router.post("/student/{student_id_number}")
 async def add_student_achievement(
     student_id_number: str,
     achievement_criteria_id: int,
     education_year_code: str,
     education_type_code: str,
-    education_semester_code: str,
+    education_semester: int,
     level_code: str,
     document: UploadFile | None = None,
 ):
@@ -83,6 +84,9 @@ async def add_student_achievement(
     achievement_criteria = await AchievementCriteriaRepository.find_by_id(
         achievement_criteria_id
     )
+
+    if education_semester < 0 and education_semester > 2:
+        return JSONResponse(content="Уже нельзя загрузить за этот период")
 
     if not achievement_criteria:
         return JSONResponse(content="Не найдено")
@@ -94,7 +98,7 @@ async def add_student_achievement(
         achievement_criteria_id=achievement_criteria_id,
         education_year_code=education_year_code,
         education_type_code=education_type_code,
-        education_semester_code=education_semester_code,
+        education_semester=education_semester,
         document_url=document,
         added_at=datetime.now(),
         level_code=level_code,
@@ -105,12 +109,17 @@ async def add_student_achievement(
     return achievement
 
 
-@router.get("/rating/{student_id}")
+@router.get("/rating/{student_id_number}")
 async def get_student_rating(
     student_id_number: str,
+    status: str,
+    page: int = 1,
+    limit: int = 15,
 ):
     result = await StudentAchievementRepository.student_rating(
         student_id_number=student_id_number,
+        status=status,
+        page, limit,
     )
 
     return result
