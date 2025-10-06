@@ -119,7 +119,8 @@ async def get_student_rating(
     result = await StudentAchievementRepository.student_rating(
         student_id_number=student_id_number,
         status=status,
-        page, limit,
+        page=page,
+        limit=limit,
     )
 
     return result
