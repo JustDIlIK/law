@@ -4,6 +4,7 @@ from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
+from sqladmin import Admin
 from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 
@@ -19,19 +20,111 @@ from app.api.endpoints.level import router as level_router
 from app.api.endpoints.education_type import router as education_type_router
 from app.api.endpoints.semester import router as semester_type_router
 from app.api.endpoints.rating import router as rating_router
+from app.api.endpoints.admin import router as admin_router
+from app.api.responses.admin import (
+    AdminView,
+    GenderView,
+    CountryView,
+    CitizenshipView,
+    EducationFormView,
+    EducationTypeView,
+    EducationSemesterView,
+    PaymentFormView,
+    StudentTypeView,
+    SocialCategoryView,
+    AccommodationView,
+    StructureTypeView,
+    LocalityTypeView,
+    EducationLanguageView,
+    GPAView,
+    LevelView,
+    AcademicDegreeView,
+    AcademicRankView,
+    EmploymentFormView,
+    StaffPositionView,
+    EmploymentStaffView,
+    EmployeeStatusView,
+    EmployeeTypeView,
+    LocationView,
+    UniversityView,
+    DepartmentView,
+    SpecialtyView,
+    GroupView,
+    SemesterView,
+    EducationYearView,
+    RoleView,
+    UserView,
+    StudentView,
+    StudentHistoryView,
+    EmployeeView,
+    PsychologistView,
+    AchievementTypeView,
+    AchievementCriteriaView,
+    StudentAchievementView,
+    StudentSubjectView,
+    PermissionView,
+)
 
+from app.api.services.adminAuth import authentication_backend
 
 from app.api.services.scheduler import start_scheduler, stop_scheduler
+from app.db.connection import engine
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # start_scheduler()
+    start_scheduler()
     yield
-    # stop_scheduler()
+    stop_scheduler()
 
 
 app = FastAPI(lifespan=lifespan)
+
+admin = Admin(
+    app, engine, authentication_backend=authentication_backend, base_url="/admin/"
+)
+
+admin.add_model_view(AdminView)
+admin.add_model_view(GenderView)
+admin.add_model_view(CountryView)
+admin.add_model_view(CitizenshipView)
+admin.add_model_view(EducationFormView)
+admin.add_model_view(EducationTypeView)
+admin.add_model_view(EducationSemesterView)
+admin.add_model_view(PaymentFormView)
+admin.add_model_view(StudentTypeView)
+admin.add_model_view(SocialCategoryView)
+admin.add_model_view(AccommodationView)
+admin.add_model_view(StructureTypeView)
+admin.add_model_view(LocalityTypeView)
+admin.add_model_view(EducationLanguageView)
+admin.add_model_view(GPAView)
+admin.add_model_view(LevelView)
+admin.add_model_view(AcademicDegreeView)
+admin.add_model_view(AcademicRankView)
+admin.add_model_view(EmploymentFormView)
+admin.add_model_view(EmploymentStaffView)
+admin.add_model_view(StaffPositionView)
+admin.add_model_view(EmployeeStatusView)
+admin.add_model_view(EmployeeTypeView)
+admin.add_model_view(LocationView)
+admin.add_model_view(UniversityView)
+admin.add_model_view(DepartmentView)
+admin.add_model_view(SpecialtyView)
+admin.add_model_view(GroupView)
+admin.add_model_view(SemesterView)
+admin.add_model_view(EducationYearView)
+admin.add_model_view(RoleView)
+admin.add_model_view(UserView)
+admin.add_model_view(StudentView)
+admin.add_model_view(StudentHistoryView)
+admin.add_model_view(EmployeeView)
+admin.add_model_view(PsychologistView)
+admin.add_model_view(AchievementTypeView)
+admin.add_model_view(AchievementCriteriaView)
+admin.add_model_view(StudentAchievementView)
+admin.add_model_view(StudentSubjectView)
+admin.add_model_view(PermissionView)
 
 
 app.add_middleware(
@@ -54,6 +147,7 @@ app.include_router(level_router)
 app.include_router(education_type_router)
 app.include_router(semester_type_router)
 app.include_router(rating_router)
+app.include_router(admin_router)
 
 
 if __name__ == "__main__":

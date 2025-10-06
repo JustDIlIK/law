@@ -41,6 +41,7 @@ from .achievement_type import AchievementType
 from .achievement_criteria import AchievementCriteria
 from .student_achievement import StudentAchievement
 from .status import Status
+from .admin import Admin
 
 __all__ = [
     # справочники (общие)
@@ -61,7 +62,6 @@ __all__ = [
     "EducationLanguage",
     "GPA",
     "Level",
-    # справочники (для сотрудников)
     "AcademicDegree",
     "AcademicRank",
     "EmploymentForm",
@@ -69,18 +69,16 @@ __all__ = [
     "StaffPosition",
     "EmployeeStatus",
     "EmployeeType",
-    # география
     "LocationType",
     "Location",
-    # университетские сущности
     "University",
     "Department",
     "Specialty",
     "Group",
     "Semester",
     "EducationYear",
-    # пользователи и роли
     "Role",
+    "Admin",
     "User",
     "Student",
     "StudentHistory",

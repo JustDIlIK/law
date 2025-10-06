@@ -14,7 +14,6 @@ class AchievementType(Base):
         ForeignKey("education_types.code"), nullable=False
     )
     max_score: Mapped[float]
-    can_upload: Mapped[bool] = mapped_column(default=False)
     description: Mapped[str] = mapped_column(String(512), nullable=True)
     criterias = relationship(
         "AchievementCriteria",

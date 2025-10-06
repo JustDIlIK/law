@@ -4,7 +4,7 @@ from jose import jwt
 from passlib.context import CryptContext
 
 from app.config.config import settings
-from app.db.repository.user import UserRepository
+from app.db.repository.admin import AdminRepository
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -26,8 +26,8 @@ def create_access_token(data: dict) -> str:
     return encoded_jwt
 
 
-async def authenticate_user(login: str, password: str):
-    user = await UserRepository.find_one_or_none(login=login)
+async def authenticate_user(email: str, password: str):
+    user = await AdminRepository.find_one_or_none(email=email)
     if not user or not verify_password(password, user.password):
         return None
 
