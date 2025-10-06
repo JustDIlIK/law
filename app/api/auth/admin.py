@@ -16,20 +16,21 @@ def get_token(request: Request):
     return token
 
 
-async def get_current_user(token: str = Depends(get_token)):
+async def get_current_user(token: str):
     try:
-        payload = jwt.decode(token, settings.KEY, settings.ALGORITHM)
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
     except JWTError:
-        raise HTTPException(status_code=401, detail="Неверный формат токена")
+        raise HTTPException(status_code=401, detail="Неверный токен")
 
-    expire: str = payload.get("exp")
-    if not expire or int(expire) < datetime.utcnow().timestamp():
-        return HTTPException(status_code=401, detail="Токен истек")
+    exp = payload.get("exp")
+    if not exp or int(exp) < datetime.utcnow().timestamp():
+        raise HTTPException(status_code=401, detail="Токен истёк")
 
-    user_id: str = payload.get("sub")
+    user_id = payload.get("sub")
     if not user_id:
-        return HTTPException(status_code=401, detail="Неверный логин или пароль")
+        raise HTTPException(status_code=401, detail="Неверный токен")
 
     user = await AdminRepository.find_by_id(int(user_id))
-
     return user
