@@ -129,10 +129,9 @@ admin.add_model_view(StudentSubjectView)
 admin.add_model_view(PermissionView)
 
 
-# ⚙️ добавляем SessionMiddleware
 app.add_middleware(
     SessionMiddleware,
-    secret_key=settings.KEY,  # любой длинный ключ
+    secret_key=settings.KEY,
 )
 
 app.add_middleware(

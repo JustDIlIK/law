@@ -10,9 +10,6 @@ from app.db.repository.user import UserRepository
 
 def get_token(request: Request):
     token = request.headers.get("Authorization")
-    token = request.session.get("user")
-    print(f"{token=}")
-
     if not token:
         print(f"{token=}")
         raise HTTPException(status_code=401, detail="Токен отсутствует")
