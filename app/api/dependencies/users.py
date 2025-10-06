@@ -2,7 +2,6 @@ from datetime import datetime
 
 from fastapi import Request, HTTPException, Depends, status
 from jose import jwt, JWTError
-from starlette.responses import JSONResponse, RedirectResponse
 
 from app.config.config import settings
 from app.db.repository.user import UserRepository

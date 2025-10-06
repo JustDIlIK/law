@@ -6,8 +6,6 @@ import uvicorn
 from fastapi import FastAPI
 from sqladmin import Admin
 from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.staticfiles import StaticFiles
 
 from app.api.endpoints.student import router as student_router
 from app.api.endpoints.employee import router as employee_router
@@ -128,11 +126,6 @@ admin.add_model_view(StudentAchievementView)
 admin.add_model_view(StudentSubjectView)
 admin.add_model_view(PermissionView)
 
-
-app.add_middleware(
-    SessionMiddleware,
-    secret_key=settings.KEY,
-)
 
 app.add_middleware(
     CORSMiddleware,

@@ -27,6 +27,10 @@ from app.db.models.user import User
 class Student(User):
     __tablename__ = "students"
 
+    __mapper_args__ = {
+        "polymorphic_identity": "student",
+    }
+
     id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
 
     university_code: Mapped[str] = mapped_column(ForeignKey("universities.code"))

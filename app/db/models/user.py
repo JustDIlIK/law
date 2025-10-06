@@ -13,6 +13,11 @@ from app.db.models.permission import user_permissions
 class User(Base):
     __tablename__ = "users"
 
+    __mapper_args__ = {
+        "polymorphic_identity": "user",
+        "polymorphic_on": "role_type",
+    }
+
     login: Mapped[str] = mapped_column(String(512), nullable=False)
     password: Mapped[str] = mapped_column(String(512), nullable=False)
     full_name: Mapped[str] = mapped_column(String(512), nullable=False)
