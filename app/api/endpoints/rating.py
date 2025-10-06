@@ -32,7 +32,7 @@ async def get_rating(
     return result
 
 
-@router.get("{student_id_number}")
+@router.get("/{student_id_number}")
 async def get_rating_by_student(
     student_id_number: str,
     education_year_code: str = "",

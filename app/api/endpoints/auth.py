@@ -74,6 +74,8 @@ async def login_user(response: Response, user_data: SUsersAuthLogin):
         )
 
     access_token = create_access_token({"sub": str(user.id)})
+    response.set_cookie("user", access_token)
+
     return {"token": access_token}
 
 
