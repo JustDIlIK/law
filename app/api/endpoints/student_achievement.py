@@ -74,7 +74,7 @@ async def add_student_achievement(
     education_year_code: str,
     education_type_code: str,
     level_code: str,
-    document: UploadFile,
+    document: UploadFile | None = None,
 ):
     if document:
         document = await save_image(document, settings.DOCUMENT_URL)
