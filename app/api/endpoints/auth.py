@@ -14,6 +14,7 @@ from app.api.services.auth import (
 from app.api.services.base import to_dict
 from app.api.services.image import save_image
 from app.config.config import settings
+from app.db.repository.student import StudentRepository
 from app.db.repository.user import UserRepository
 
 router = APIRouter(
@@ -87,5 +88,8 @@ async def login_user(response: Response):
 @router.get("/current-user")
 async def login_user(user=Depends(get_current_user)):
     print(f"{user=}")
+
+    if user.role == "student":
+        user = await StudentRepository.get_student_from_user_id(user.id)
 
     return user

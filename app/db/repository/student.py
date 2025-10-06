@@ -6,7 +6,7 @@ from sqlalchemy.orm import ONETOMANY, selectinload, joinedload
 
 from app.api.services.dates import from_seconds_to_date
 from app.db.connection import async_session
-from app.db.models import Student, User, Group
+from app.db.models import Student, User, Group, Role
 from app.db.models.student_history import StudentHistory
 from app.db.repository.base import BaseRepository
 
@@ -193,3 +193,16 @@ class StudentRepository(BaseRepository):
                 "data": students,
                 "total": total,
             }
+
+    async def get_student_from_user_id(user_id: int):
+        async with async_session() as session:
+            query = (
+                select(Student)
+                .join(User, Student.id == User.id)
+                .join(Role, User.role_id == Role.id)
+                .options(joinedload(Student.university))
+                .where(Role.name == "student", User.id == user_id)
+            )
+
+            result = await session.execute(query)
+            return result.scalar_one_or_none()
