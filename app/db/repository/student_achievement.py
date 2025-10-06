@@ -67,7 +67,6 @@ class StudentAchievementRepository(BaseRepository):
 
                 total_sum = 0
                 student_achievements_storage = {}
-                с
 
                 data.append(
                     {
@@ -101,6 +100,13 @@ class StudentAchievementRepository(BaseRepository):
             total_sum = 0
             student_achievements_storage = {}
             for student_achievement in student.student_achievements:
+                status = await StatusRepository.find_by_variable(title="succeed")
+
+                if (
+                    student_achievement.status != status.id
+                    or not student_achievement.is_verified
+                ):
+                    continue
 
                 achievement_type = student_achievement.criterias.achievement_type
 

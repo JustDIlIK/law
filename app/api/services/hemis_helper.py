@@ -1,5 +1,6 @@
 import asyncio
 import math
+import time
 import uuid
 from collections import Counter
 from datetime import datetime, timedelta
@@ -90,11 +91,14 @@ async def fetch_student(
 ):
     print(f"{url=}")
     async with AsyncClient() as client:
+        try:
+            response = await client.get(
+                url=f"{url}?student_id_number={student_id_number}&student_id={student_hemis_id}",
+                headers={"Authorization": f"Bearer {settings.HEMIS_TOKEN}"},
+            )
+        except httpx.ConnectTimeout:
+            return None
 
-        response = await client.get(
-            url=f"{url}?student_id_number={student_id_number}&student_id={student_hemis_id}",
-            headers={"Authorization": f"Bearer {settings.HEMIS_TOKEN}"},
-        )
         response.raise_for_status()
         return response.json()
 
@@ -720,13 +724,18 @@ async def save_student_from_api():
             print(f"{index=}")
 
             index += 1
-
+            time.sleep(1)
             print(f"{student.student_id_number=}")
-            data = await fetch_student(
-                url=settings.HEMIS_GET_STUDENT,
-                student_id_number=student.student_id_number,
-                student_hemis_id=student.external_id,
-            )
+            while True:
+                data = await fetch_student(
+                    url=settings.HEMIS_GET_STUDENT,
+                    student_id_number=student.student_id_number,
+                    student_hemis_id=student.external_id,
+                )
+
+                if data:
+                    break
+
             data = data["data"]
 
             for gpa in data.get("studentGpas", []):
