@@ -2,7 +2,7 @@ from collections import Counter
 from datetime import datetime, timezone
 
 from sqlalchemy import select, update, inspect, func
-from sqlalchemy.orm import ONETOMANY, selectinload, joinedload
+from sqlalchemy.orm import ONETOMANY, selectinload, joinedload, aliased
 
 from app.api.services.dates import from_seconds_to_date
 from app.db.connection import async_session
@@ -196,12 +196,13 @@ class StudentRepository(BaseRepository):
 
     async def get_student_from_user_id(user_id: int):
         async with async_session() as session:
+            user_alias = aliased(User)
+
             query = (
                 select(Student)
-                .join(User, Student.id == User.id)
-                .join(Role, User.role_id == Role.id)
-                .options(joinedload(Student.university))
-                .where(Role.name == "student", User.id == user_id)
+                .join(user_alias, Student.id == user_alias.id)
+                .join(Role, user_alias.role_id == Role.id)
+                .where(Role.name == "student", user_alias.id == user_id)
             )
 
             result = await session.execute(query)

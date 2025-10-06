@@ -89,7 +89,7 @@ async def login_user(response: Response):
 async def login_user(user=Depends(get_current_user)):
     print(f"{user=}")
 
-    if user.role == "student":
+    if user.role.name == "student":
         user = await StudentRepository.get_student_from_user_id(user.id)
 
     return user
