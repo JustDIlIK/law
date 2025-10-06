@@ -9,7 +9,7 @@ from app.api.services.auth import (
 )
 from app.db.repository.admin import AdminRepository
 
-router = APIRouter(prefix=("/admin"), tags=["Админ"])
+router = APIRouter(prefix=("/admin-auth"), tags=["Админ"])
 
 
 @router.post("/register")
@@ -28,13 +28,9 @@ async def register_user(user_data: SAdminAuthLogin):
 @router.post("/login")
 async def login_user(
     response: Response,
-    username: str = Form(...),
-    password: str = Form(...),
+    admin_data: SAdminAuthLogin,
 ):
-    print(f"{username=}")
-    print(f"{username=}")
-
-    user = await authenticate_user(username, password)
+    user = await authenticate_user(admin_data.email, admin_data.password)
     print(f"{user=}")
     if not user:
         return JSONResponse(
