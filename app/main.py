@@ -135,6 +135,7 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
 app.include_router(auth_router)
 app.include_router(student_router)
 app.include_router(employee_router)

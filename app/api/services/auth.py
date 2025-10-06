@@ -38,6 +38,7 @@ async def authenticate_user(login: str, password: str):
 
 async def authenticate_admin(email: EmailStr, password: str):
     admin = await AdminRepository.find_one_or_none(email=email)
+    print(f"{admin=}")
     if not admin or not verify_password(password, admin.password):
         return None
 
