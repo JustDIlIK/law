@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import ForeignKey, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.connection import Base
 
@@ -26,3 +26,5 @@ class GPA(Base):
     education_year_code: Mapped[str] = mapped_column(
         ForeignKey("education_years.code"), nullable=False
     )
+
+    student = relationship("Student", back_populates="gpa")

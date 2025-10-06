@@ -133,3 +133,4 @@ class Student(User):
 
     student_achievements = relationship("StudentAchievement", back_populates="student")
     subjects = relationship("StudentSubject", back_populates="student")
+    gpa = relationship("GPA", back_populates="student")

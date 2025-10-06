@@ -4,6 +4,8 @@ from sqlalchemy.orm import joinedload, selectinload, ONETOMANY, contains_eager
 from app.db.connection import async_session
 from app.db.models import StudentAchievement, Student, AchievementCriteria
 from app.db.repository.base import BaseRepository
+from app.db.repository.gpa import GPARepository
+from app.db.repository.status import StatusRepository
 
 
 class StudentAchievementRepository(BaseRepository):
@@ -62,43 +64,10 @@ class StudentAchievementRepository(BaseRepository):
             data = []
 
             for student in students:
+
                 total_sum = 0
                 student_achievements_storage = {}
-                for student_achievement in student.student_achievements:
-
-                    achievement_type = student_achievement.criterias.achievement_type
-
-                    print(f"{student_achievement=}")
-
-                    if achievement_type.name not in student_achievements_storage:
-                        student_achievements_storage[achievement_type.name] = {
-                            "data": [],
-                            "total": 0,
-                        }
-                    student_achievements_storage[achievement_type.name]["data"].append(
-                        {
-                            "value": student_achievement.value,
-                            "id": student_achievement.id,
-                            "achievement_id": student_achievement.criterias.achievement_type_id,
-                            "achievement_name": student_achievement.criterias.achievement_type.name,
-                        }
-                    )
-
-                    student_achievements_storage[achievement_type.name][
-                        "total"
-                    ] += student_achievement.value
-
-                    if (
-                        achievement_type.max_score
-                        < student_achievements_storage[achievement_type.name]["total"]
-                    ):
-                        student_achievements_storage[achievement_type.name][
-                            "total"
-                        ] = achievement_type.max_score
-
-                if is_verified:
-                    for k, v in student_achievements_storage.items():
-                        total_sum += student_achievements_storage[k]["total"]
+                с
 
                 data.append(
                     {

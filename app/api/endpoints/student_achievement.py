@@ -6,6 +6,7 @@ from starlette.responses import JSONResponse
 from app.api.services.image import save_image
 from app.config.config import settings
 from app.db.repository.achievement_criteria import AchievementCriteriaRepository
+from app.db.repository.gpa import GPARepository
 from app.db.repository.status import StatusRepository
 from app.db.repository.student_achievement import StudentAchievementRepository
 
@@ -22,6 +23,7 @@ async def get_all_achievements(
     search: str = "",
     gender: str = "",
 ):
+
     achievements = await StudentAchievementRepository.get_with_achievements(
         page,
         limit,
@@ -32,6 +34,12 @@ async def get_all_achievements(
         gender=gender,
     )
 
+    for achievement in achievements["data"]:
+        print(f"{achievement=}")
+        gpa = await GPARepository.get_gpa(
+            student_id_number=achievement["student_id_number"],
+        )
+        print(f"{gpa=}")
     return achievements
 
 

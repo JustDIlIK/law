@@ -18,7 +18,7 @@ from app.api.endpoints.gender import router as gender_router
 from app.api.endpoints.level import router as level_router
 from app.api.endpoints.education_type import router as education_type_router
 from app.api.endpoints.semester import router as semester_type_router
-from app.api.endpoints.gpa import router as gpa_router
+from app.api.endpoints.rating import router as rating_router
 
 
 from app.api.services.scheduler import start_scheduler, stop_scheduler
@@ -53,6 +53,7 @@ app.include_router(gender_router)
 app.include_router(level_router)
 app.include_router(education_type_router)
 app.include_router(semester_type_router)
+app.include_router(rating_router)
 
 
 if __name__ == "__main__":
