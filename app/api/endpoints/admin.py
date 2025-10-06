@@ -6,6 +6,7 @@ from app.api.services.auth import (
     get_hashed_password,
     create_access_token,
     authenticate_user,
+    authenticate_admin,
 )
 from app.db.repository.admin import AdminRepository
 
@@ -30,7 +31,7 @@ async def login_user(
     response: Response,
     admin_data: SAdminAuthLogin,
 ):
-    user = await authenticate_user(admin_data.email, admin_data.password)
+    user = await authenticate_admin(admin_data.email, admin_data.password)
     print(f"{user=}")
     if not user:
         return JSONResponse(
