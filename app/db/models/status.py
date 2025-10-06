@@ -12,3 +12,6 @@ class Status(Base):
     student_achievements = relationship(
         "StudentAchievement", back_populates="current_status"
     )
+
+    def __str__(self):
+        return self.title

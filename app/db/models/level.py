@@ -11,3 +11,6 @@ class Level(Base):
     name: Mapped[str] = mapped_column(String(512), nullable=False)
 
     student_achievements = relationship("StudentAchievement", back_populates="level")
+
+    def __str__(self):
+        return self.name

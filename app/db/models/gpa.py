@@ -28,3 +28,6 @@ class GPA(Base):
     )
 
     student = relationship("Student", back_populates="gpa")
+
+    def __str__(self):
+        return f"{self.student_id_number} - GPA {self.value}"

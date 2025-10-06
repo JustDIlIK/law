@@ -41,3 +41,6 @@ class StudentHistory(Base):
     created_at: Mapped[datetime]
     updated_at: Mapped[datetime]
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))
+
+    def __str__(self):
+        return self.full_name

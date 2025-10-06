@@ -18,3 +18,6 @@ class AchievementCriteria(Base):
     student_achievements = relationship(
         "StudentAchievement", back_populates="criterias"
     )
+
+    def __str__(self):
+        return self.name

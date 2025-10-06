@@ -57,3 +57,6 @@ class User(Base):
         back_populates="users",
         lazy="selectin",
     )
+
+    def __str__(self):
+        return self.full_name

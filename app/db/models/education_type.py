@@ -16,3 +16,6 @@ class EducationType(Base):
     student_achievements = relationship(
         "StudentAchievement", back_populates="education_type"
     )
+
+    def __str__(self):
+        return self.name

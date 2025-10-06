@@ -61,3 +61,6 @@ class StudentAchievement(Base):
     criterias = relationship(
         "AchievementCriteria", back_populates="student_achievements"
     )
+
+    def __str__(self):
+        return self.id

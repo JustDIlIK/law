@@ -27,3 +27,6 @@ class Permission(Base):
         secondary=user_permissions,
         back_populates="permissions",
     )
+
+    def __str__(self):
+        return self.name

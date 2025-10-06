@@ -8,3 +8,6 @@ class Admin(Base):
 
     email = Column(String, nullable=False)
     password = Column(String, nullable=False)
+
+    def __str__(self):
+        return self.email

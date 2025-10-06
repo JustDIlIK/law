@@ -22,3 +22,6 @@ class AchievementType(Base):
         passive_deletes=True,
     )
     education_type = relationship("EducationType", back_populates="achievement_types")
+
+    def __str__(self):
+        return self.name

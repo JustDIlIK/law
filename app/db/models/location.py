@@ -23,3 +23,6 @@ class Location(Base):
     parent: Mapped["Location"] = relationship(
         "Location", remote_side="Location.code", backref="children"
     )
+
+    def __str__(self):
+        return self.name

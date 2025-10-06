@@ -14,3 +14,6 @@ class Semester(Base):
     academic_year_code: Mapped[str] = mapped_column(
         ForeignKey("education_years.code"), nullable=True
     )
+
+    def __str__(self):
+        return self.name

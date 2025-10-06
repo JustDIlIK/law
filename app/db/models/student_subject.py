@@ -29,3 +29,6 @@ class StudentSubject(Base):
     passed: Mapped[bool] = mapped_column(default=False)
 
     student = relationship("Student", back_populates="subjects")
+
+    def __str__(self):
+        return self.name

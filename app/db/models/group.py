@@ -13,3 +13,6 @@ class Group(Base):
         ForeignKey("education_languages.code")
     )
     education_lang: Mapped[EducationLanguage] = relationship("EducationLanguage")
+
+    def __str__(self):
+        return self.name

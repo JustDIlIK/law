@@ -18,3 +18,6 @@ class EducationYear(Base):
         "EducationSemester",
         back_populates="education_year",
     )
+
+    def __str__(self):
+        return self.name

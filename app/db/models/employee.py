@@ -57,3 +57,6 @@ class Employee(User):
     decree_number: Mapped[str] = mapped_column(String(512))
     decree_date: Mapped[Optional[date]] = mapped_column(nullable=True)
     specialty: Mapped[str] = mapped_column(String(512))
+
+    def __str__(self):
+        return self.full_name

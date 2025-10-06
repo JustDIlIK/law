@@ -27,3 +27,6 @@ class Department(Base):
 
     structure_type: Mapped[StructureType] = relationship("StructureType")
     locality_type: Mapped[LocalityType] = relationship("LocalityType")
+
+    def __str__(self):
+        return self.name

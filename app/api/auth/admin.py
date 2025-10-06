@@ -33,4 +33,5 @@ async def get_current_user(token: str):
         raise HTTPException(status_code=401, detail="Неверный токен")
 
     user = await AdminRepository.find_by_id(int(user_id))
+
     return user
