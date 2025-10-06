@@ -19,15 +19,23 @@ class AdminAuth(AuthenticationBackend):
             return False
 
         access_token = create_access_token({"sub": str(user.id)})
-        request.session["admin-token"] = access_token
+        response = RedirectResponse(url="/admin", status_code=302)
+        response.set_cookie(
+            key="admin-token",
+            value=access_token,
+            httponly=True,
+            samesite="lax",
+            secure=False,  # True, если HTTPS
+        )
+        await response(scope=request.scope, receive=request.receive, send=request._send)
         return True
 
     async def logout(self, request: Request) -> bool:
-        request.session.clear()
+        request.cookies.clear()
         return True
 
     async def authenticate(self, request: Request):
-        token = request.session.get("admin-token")
+        token = request.cookies.get("admin-token")
         if not token:
             return RedirectResponse(request.url_for("admin:login"), status_code=302)
 
