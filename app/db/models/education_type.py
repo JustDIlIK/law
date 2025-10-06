@@ -8,7 +8,7 @@ class EducationType(Base):
     __tablename__ = "education_types"
 
     code: Mapped[str] = mapped_column(
-        String(512), unique=True, nullable=False, index=True
+        String(512), unique=True, nullable=True, index=True
     )
     name: Mapped[str] = mapped_column(String(512), nullable=False)
 
