@@ -81,7 +81,7 @@ class RatingRepository(BaseRepository):
                     StudentAchievement,
                     and_(
                         StudentAchievement.is_verified.is_(True),
-                        StudentAchievement.status == status.id,
+                        StudentAchievement.status_id == status.id,
                     ),
                     include_aliases=True,
                 )
@@ -162,7 +162,24 @@ class RatingRepository(BaseRepository):
                         student_achievements_storage[achievement_type.name][
                             "total"
                         ] = achievement_type.max_score
+                print(f"{student.gpa=}")
 
+                for gpa in student.gpa:
+
+                    if (
+                        education_year_code
+                        and gpa.education_year_code == education_year_code
+                    ):
+                        gpa_score = gpa.value * 100 / 5
+                        gpa_value = -10
+                        if 86 >= gpa_score <= 100:
+                            gpa_value = 50
+                        elif 85 >= gpa_score <= 71:
+                            gpa_value = 40
+                        elif 70 >= gpa_score <= 56:
+                            gpa_value = 30
+
+                        total_sum += gpa_value
                 for k, v in student_achievements_storage.items():
                     total_sum += student_achievements_storage[k]["total"]
 
@@ -239,7 +256,7 @@ class RatingRepository(BaseRepository):
                     StudentAchievement,
                     and_(
                         StudentAchievement.is_verified.is_(True),
-                        StudentAchievement.status == status.id,
+                        StudentAchievement.status_id == status.id,
                     ),
                     include_aliases=True,
                 )

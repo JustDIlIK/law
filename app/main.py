@@ -6,6 +6,7 @@ import uvicorn
 from fastapi import FastAPI
 from sqladmin import Admin
 from starlette.middleware.cors import CORSMiddleware
+from starlette.staticfiles import StaticFiles
 
 from app.api.endpoints.student import router as student_router
 from app.api.endpoints.employee import router as employee_router
@@ -136,6 +137,7 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
+app.mount("/uploads", StaticFiles(directory="uploads"), name="static")
 app.include_router(auth_router)
 app.include_router(student_router)
 app.include_router(employee_router)

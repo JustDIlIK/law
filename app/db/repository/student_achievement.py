@@ -14,77 +14,64 @@ class StudentAchievementRepository(BaseRepository):
     @classmethod
     async def get_with_achievements(
         cls,
+        is_verified: bool,
         page=1,
-        limit=10,
+        limit=20,
         education_year_code: str = "",
         education_type_code: str = "",
         level_code: str = "",
         search: str = "",
         gender: str = "",
-        is_verified: bool = True,
+        status: str = "",
     ):
         async with async_session() as session:
             offset = (page - 1) * limit
-
+            print("Here")
             query = (
-                select(Student)
-                .join(Student.student_achievements)
+                select(cls.model)
+                .join(Student)
+                .options(joinedload(cls.model.student))
+                .join(cls.model.criterias)
                 .options(
-                    contains_eager(Student.student_achievements)
-                    .joinedload(StudentAchievement.criterias)
-                    .joinedload(AchievementCriteria.achievement_type)
+                    contains_eager(cls.model.criterias).joinedload(
+                        AchievementCriteria.achievement_type
+                    )
                 )
+                .options(joinedload(cls.model.status))
                 .offset(offset)
                 .limit(limit)
-                .order_by(Student.student_id_number)
+                .order_by(cls.model.added_at.desc())
             )
             print(f"{education_type_code=}")
-            filters = [StudentAchievement.is_verified.is_(is_verified)]
+            if is_verified:
+                query = query.filter(cls.model.is_verified.is_(is_verified))
+
             if education_year_code:
-                filters.append(
-                    StudentAchievement.education_year_code == education_year_code
+                query = query.filter(
+                    cls.model.education_year_code == education_year_code
                 )
             if education_type_code:
-                filters.append(
-                    StudentAchievement.education_type_code == education_type_code
+                query = query.filter(
+                    cls.model.education_type_code == education_type_code
                 )
             if level_code:
-                filters.append(StudentAchievement.level_code == level_code)
+                query = query.filter(cls.model.level_code == level_code)
             if gender:
-                filters.append(Student.gender_code == gender)
+                query = query.filter(Student.gender_code == gender)
             if search:
-                filters.append(Student.full_name.ilike(f"%{search}%"))
-
-            print(f"{filters=}")
-            query = query.filter(*filters)
+                query = query.filter(Student.full_name.ilike(f"%{search}%"))
 
             result = await session.execute(query)
+            result = result.scalars().all()
 
-            students = result.scalars().unique().all()
-            data = []
-
-            for student in students:
-
-                total_sum = 0
-                student_achievements_storage = {}
-
-                data.append(
-                    {
-                        "id": student.id,
-                        "full_name": student.full_name,
-                        "student_id_number": student.student_id_number,
-                        "student_achievements": student_achievements_storage,
-                        "total_sum": total_sum,
-                    }
-                )
-
-            return {"data": data, "total": 0}
+            return {"data": result, "total": 0}
 
     @classmethod
     async def student_rating(
         cls,
         student_id_number: str,
         status: str,
+        achievement_criteria_id: int,
         page: int = 1,
         limit: int = 15,
     ):
@@ -92,69 +79,35 @@ class StudentAchievementRepository(BaseRepository):
 
         async with async_session() as session:
             query = (
-                select(Student)
+                select(cls.model)
                 .filter_by(student_id_number=student_id_number)
-                .join(Student.student_achievements)
-                .options(selectinload(Student.student_achievements))
-                .options(selectinload(Student.student_achievements))
+                .join(cls.model.criterias)
+                .options(
+                    contains_eager(cls.model.criterias).joinedload(
+                        AchievementCriteria.achievement_type
+                    )
+                )
+                .options(joinedload(cls.model.status))
                 .offset(offset)
                 .limit(limit)
+                .order_by(cls.model.added_at.desc())
             )
-            result = await session.execute(query)
-            student = result.scalar()
-            print(student)
-            data = []
-
-            total_sum = 0
-            student_achievements_storage = {}
-            for student_achievement in student.student_achievements:
-                status = await StatusRepository.find_by_variable(title=status)
-                if (
-                    student_achievement.status != status.id
-                    or not student_achievement.is_verified
-                ):
-                    continue
-
-                achievement_type = student_achievement.criterias.achievement_type
-
-                print(f"{student_achievement=}")
-
-                if achievement_type.name not in student_achievements_storage:
-                    student_achievements_storage[achievement_type.name] = {
-                        "data": [],
-                        "total": 0,
-                    }
-                student_achievements_storage[achievement_type.name]["data"].append(
-                    {
-                        "value": student_achievement.value,
-                        "id": student_achievement.id,
-                        "achievement_id": student_achievement.criterias.achievement_type_id,
-                        "achievement_name": student_achievement.criterias.achievement_type.name,
-                    }
+            filters = []
+            if achievement_criteria_id:
+                filters.append(
+                    StudentAchievement.achievement_criteria_id
+                    == achievement_criteria_id
                 )
+            if status:
 
-                student_achievements_storage[achievement_type.name][
-                    "total"
-                ] += student_achievement.value
+                status_id = await StatusRepository.find_by_variable(title=status)
 
-                if (
-                    achievement_type.max_score
-                    < student_achievements_storage[achievement_type.name]["total"]
-                ):
-                    student_achievements_storage[achievement_type.name][
-                        "total"
-                    ] = achievement_type.max_score
+                filters.append(StudentAchievement.status_id == status_id.id)
 
-            for k, v in student_achievements_storage.items():
-                total_sum += student_achievements_storage[k]["total"]
+            query = query.filter(*filters)
+            result = await session.execute(query)
+            student = result.unique().scalars().all()
+            if not student:
+                return []
 
-            data.append(
-                {
-                    "id": student.id,
-                    "full_name": student.full_name,
-                    "student_id_number": student.student_id_number,
-                    "student_achievements": student_achievements_storage,
-                    "total_sum": total_sum,
-                }
-            )
-        return data
+            return student

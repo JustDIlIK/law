@@ -9,9 +9,7 @@ class Status(Base):
 
     title: Mapped[str] = mapped_column(String(128))
 
-    student_achievements = relationship(
-        "StudentAchievement", back_populates="current_status"
-    )
+    student_achievements = relationship("StudentAchievement", back_populates="status")
 
     def __str__(self):
         return self.title

@@ -64,7 +64,6 @@ async def patch_achievement_type(record_id: int, data: AchievementTypeUpdateSche
     criterias = data.criterias
     del_criterias = data.deleted_criterias
 
-    print(f"{data=}")
     achievement_data = data.model_dump(
         exclude_unset=True,
         exclude={"criterias", "deleted_criterias"},

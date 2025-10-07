@@ -31,21 +31,20 @@ class StudentAchievement(Base):
     education_year_code: Mapped[str] = mapped_column(
         ForeignKey("education_years.code"), nullable=False
     )
-    education_semester_code: Mapped[str] = mapped_column(
-        ForeignKey("semesters.code"), nullable=True
-    )
+    education_semester: Mapped[int] = mapped_column(nullable=True)
     education_type_code: Mapped[str] = mapped_column(
         ForeignKey("education_types.code"), nullable=True
     )
 
+    student_comment: Mapped[str] = mapped_column(nullable=True)
     moderator_comment: Mapped[str] = mapped_column(nullable=True)
 
-    status: Mapped[int] = mapped_column(
+    status_id: Mapped[int] = mapped_column(
         ForeignKey("statuses.id"),
         nullable=True,
     )
 
-    current_status = relationship("Status", back_populates="student_achievements")
+    status = relationship("Status", back_populates="student_achievements")
 
     student = relationship("Student", back_populates="student_achievements")
     level = relationship("Level", back_populates="student_achievements")
@@ -59,8 +58,6 @@ class StudentAchievement(Base):
     criterias = relationship(
         "AchievementCriteria", back_populates="student_achievements"
     )
-
-    semesters = relationship("Semester", back_populates="student_achievements")
 
     def __str__(self):
         return self.id

@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from fastapi import APIRouter, UploadFile, HTTPException
+from fastapi import APIRouter, UploadFile, HTTPException, Body
 from starlette.responses import JSONResponse
 
+from app.api.schemas.student_achievement import StudentAchievementVerify
 from app.api.services.image import save_image
 from app.config.config import settings
 from app.db.repository.achievement_criteria import AchievementCriteriaRepository
@@ -23,24 +24,22 @@ async def get_all_achievements(
     level_code: str = "",
     search: str = "",
     gender: str = "",
+    status: str = "",
+    is_verified: bool = None,
 ):
 
     achievements = await StudentAchievementRepository.get_with_achievements(
-        page,
-        limit,
+        status=status,
+        page=page,
+        limit=limit,
         education_year_code=education_year_code,
         education_type_code=education_type_code,
         level_code=level_code,
         search=search,
         gender=gender,
+        is_verified=is_verified,
     )
 
-    for achievement in achievements["data"]:
-        print(f"{achievement=}")
-        gpa = await GPARepository.get_gpa(
-            student_id_number=achievement["student_id_number"],
-        )
-        print(f"{gpa=}")
     return achievements
 
 
@@ -71,15 +70,18 @@ async def get_all_achievements(
 @router.post("/student/{student_id_number}")
 async def add_student_achievement(
     student_id_number: str,
-    achievement_criteria_id: int,
-    education_year_code: str,
-    education_type_code: str,
-    education_semester: int,
-    level_code: str,
+    achievement_criteria_id: int = Body(),
+    education_year_code: str = Body(),
+    education_type_code: str = Body(),
+    education_semester: int = Body(),
+    level_code: str = Body(),
+    student_comment: str = Body(),
     document: UploadFile | None = None,
 ):
+    print(document)
     if document:
         document = await save_image(document, settings.DOCUMENT_URL)
+    print(document)
 
     achievement_criteria = await AchievementCriteriaRepository.find_by_id(
         achievement_criteria_id
@@ -99,26 +101,28 @@ async def add_student_achievement(
         education_year_code=education_year_code,
         education_type_code=education_type_code,
         education_semester=education_semester,
+        student_comment=student_comment,
         document_url=document,
         added_at=datetime.now(),
         level_code=level_code,
-        status=status_pending.id,
+        status_id=status_pending.id,
         value=achievement_criteria.score,
     )
-    print(achievement)
     return achievement
 
 
 @router.get("/rating/{student_id_number}")
 async def get_student_rating(
     student_id_number: str,
-    status: str,
+    status: str = None,
+    achievement_criteria_id: int = None,
     page: int = 1,
     limit: int = 15,
 ):
     result = await StudentAchievementRepository.student_rating(
         student_id_number=student_id_number,
         status=status,
+        achievement_criteria_id=achievement_criteria_id,
         page=page,
         limit=limit,
     )
@@ -127,26 +131,25 @@ async def get_student_rating(
 
 
 @router.put("/verify")
-async def verify_document(
-    id: int,
-    approved: bool,
-    moderator_comment: str | None = None,
-):
-    student_achievement = await StudentAchievementRepository.find_by_id(id)
+async def verify_document(verify_data: StudentAchievementVerify):
+
+    student_achievement = await StudentAchievementRepository.find_by_id(
+        verify_data.application_id
+    )
     if not student_achievement:
         raise HTTPException(status_code=404, detail="Запись не найдена")
     if student_achievement.is_verified:
         raise HTTPException(status_code=404, detail="Уже обработана")
 
     status = await StatusRepository.find_by_variable(
-        title="succeed" if approved else "failed"
+        title="succeed" if verify_data.approved else "failed"
     )
 
     await StudentAchievementRepository.update_data(
-        id=id,
+        id=verify_data.application_id,
         is_verified=True,
-        moderator_comment=moderator_comment,
-        status=status.id,
+        moderator_comment=verify_data.moderator_comment,
+        status_id=status.id,
     )
 
     return student_achievement
