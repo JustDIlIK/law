@@ -10,7 +10,7 @@ router = APIRouter(prefix="/criteria", tags=["Критерии достижен�
 async def list_criteria(achievement_type_id: int):
 
     result = await AchievementCriteriaRepository.find_by_id(
-        record_id=achievement_type_id
+        record_id=achievement_type_id,
     )
     return result
 

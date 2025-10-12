@@ -23,12 +23,13 @@ class RatingRepository(BaseRepository):
         limit=50,
         education_year_code: str = "",
         education_type_code: str = "",
-        level_code: str = "",
+        # level_code: str = "",
         search: str = "",
         gender: str = "",
     ):
         async with async_session() as session:
             offset = (page - 1) * limit
+            status = await StatusRepository.find_by_variable(title="succeed")
 
             query = (
                 select(Student)
@@ -38,63 +39,13 @@ class RatingRepository(BaseRepository):
                     .selectinload(AchievementCriteria.achievement_type),
                     selectinload(Student.gpa),
                     with_loader_criteria(
-                        GPA, GPA.education_year_code == education_year_code
-                    ),
-                )
-                .limit(limit)
-                .offset(offset)
-                .order_by(Student.student_id_number)
-            )
-
-            conditions = []
-
-            if education_year_code:
-                cond_ach = exists().where(
-                    StudentAchievement.education_year_code == education_year_code
-                )
-                cond_gpa = exists().where(
-                    GPA.education_year_code == education_year_code
-                )
-                conditions.append(or_(cond_ach, cond_gpa))
-
-            if education_type_code:
-                cond_ach = exists().where(
-                    StudentAchievement.education_type_code == education_type_code
-                )
-                cond_gpa = exists().where(
-                    GPA.education_type_code == education_type_code
-                )
-                conditions.append(or_(cond_ach, cond_gpa))
-
-            if level_code:
-                cond_ach = exists().where(StudentAchievement.level_code == level_code)
-                cond_gpa = exists().where(GPA.level_code == level_code)
-                conditions.append(or_(cond_ach, cond_gpa))
-
-            if gender:
-                conditions.append(Student.gender_code == gender)
-
-            if search:
-                conditions.append(Student.full_name.ilike(f"%{search.strip()}%"))
-
-            query = query.filter(*conditions)
-            status = await StatusRepository.find_by_variable(title="succeed")
-            query = query.options(
-                with_loader_criteria(
-                    StudentAchievement,
-                    and_(
-                        StudentAchievement.is_verified.is_(True),
-                        StudentAchievement.status_id == status.id,
-                    ),
-                    include_aliases=True,
-                )
-            )
-
-            if education_year_code:
-                query = query.options(
-                    with_loader_criteria(
                         StudentAchievement,
-                        StudentAchievement.education_year_code == education_year_code,
+                        and_(
+                            StudentAchievement.is_verified.is_(True),
+                            StudentAchievement.status_id == status.id,
+                            StudentAchievement.education_year_code
+                            == education_year_code,
+                        ),
                         include_aliases=True,
                     ),
                     with_loader_criteria(
@@ -103,34 +54,20 @@ class RatingRepository(BaseRepository):
                         include_aliases=True,
                     ),
                 )
+                .offset(offset)
+                .limit(limit)
+                .order_by(Student.education_year_code)
+            )
 
+            conditions = []
+            if gender:
+                conditions.append(Student.gender_code == gender)
+            if search:
+                conditions.append(Student.full_name.ilike(f"%{search.strip()}%"))
             if education_type_code:
-                query = query.options(
-                    with_loader_criteria(
-                        StudentAchievement,
-                        StudentAchievement.education_type_code == education_type_code,
-                        include_aliases=True,
-                    ),
-                    with_loader_criteria(
-                        GPA,
-                        GPA.education_type_code == education_type_code,
-                        include_aliases=True,
-                    ),
-                )
+                conditions.append(Student.education_type_code == education_type_code)
 
-            if level_code:
-                query = query.options(
-                    with_loader_criteria(
-                        StudentAchievement,
-                        StudentAchievement.level_code == level_code,
-                        include_aliases=True,
-                    ),
-                    with_loader_criteria(
-                        GPA,
-                        GPA.level_code == level_code,
-                        include_aliases=True,
-                    ),
-                )
+            query = query.filter(*conditions)
 
             result = await session.execute(query)
             students = result.unique().scalars().all()
@@ -165,7 +102,9 @@ class RatingRepository(BaseRepository):
                         student_achievements_storage[achievement_type.name][
                             "total"
                         ] = achievement_type.max_score
-                print(f"{student.gpa=}")
+                    setattr(
+                        student, "achievements_summary", student_achievements_storage
+                    )
 
                 for gpa in student.gpa:
 
@@ -177,8 +116,6 @@ class RatingRepository(BaseRepository):
                         total_sum += gpa.value
                 for k, v in student_achievements_storage.items():
                     total_sum += student_achievements_storage[k]["total"]
-
-                setattr(student, "achievements_summary", student_achievements_storage)
                 setattr(student, "total_sum", total_sum)
 
             total_query = select(func.count()).select_from(Student)
@@ -195,115 +132,85 @@ class RatingRepository(BaseRepository):
         student_id_number: str,
         education_year_code: str = "",
         education_type_code: str = "",
-        level_code: str = "",
         search: str = "",
         gender: str = "",
     ):
         async with async_session() as session:
+            status = await StatusRepository.find_by_variable(title="succeed")
 
+            # Базовый запрос
             query = (
                 select(Student)
                 .filter_by(student_id_number=student_id_number)
                 .options(
+                    # Подгрузка зависимостей
                     selectinload(Student.student_achievements)
                     .selectinload(StudentAchievement.criterias)
                     .selectinload(AchievementCriteria.achievement_type),
                     selectinload(Student.gpa),
                 )
-                .order_by(Student.student_id_number)
+                .order_by(Student.education_year_code)
             )
 
-            conditions = []
+            # ---------- Динамическое построение фильтров ----------
 
+            # Для StudentAchievement
+            achievement_filters = [
+                StudentAchievement.is_verified.is_(True),
+                StudentAchievement.status_id == status.id,
+            ]
             if education_year_code:
-                cond_ach = exists().where(
+                achievement_filters.append(
                     StudentAchievement.education_year_code == education_year_code
                 )
-                cond_gpa = exists().where(
-                    GPA.education_year_code == education_year_code
-                )
-                conditions.append(or_(cond_ach, cond_gpa))
-
             if education_type_code:
-                cond_ach = exists().where(
+                achievement_filters.append(
                     StudentAchievement.education_type_code == education_type_code
                 )
-                cond_gpa = exists().where(
-                    GPA.education_type_code == education_type_code
-                )
-                conditions.append(or_(cond_ach, cond_gpa))
 
-            if level_code:
-                cond_ach = exists().where(StudentAchievement.level_code == level_code)
-                cond_gpa = exists().where(GPA.level_code == level_code)
-                conditions.append(or_(cond_ach, cond_gpa))
+            # Для GPA
+            gpa_filters = []
+            if education_year_code:
+                gpa_filters.append(GPA.education_year_code == education_year_code)
+            if education_type_code:
+                gpa_filters.append(GPA.education_type_code == education_type_code)
 
-            if gender:
-                conditions.append(Student.gender_code == gender)
-
-            if search:
-                conditions.append(Student.full_name.ilike(f"%{search.strip()}%"))
-
-            query = query.filter(*conditions)
-            status = await StatusRepository.find_by_variable(title="succeed")
-            query = query.options(
+            # Применяем фильтры только если они есть
+            loader_options = [
                 with_loader_criteria(
                     StudentAchievement,
-                    and_(
-                        StudentAchievement.is_verified.is_(True),
-                        StudentAchievement.status_id == status.id,
-                    ),
+                    and_(*achievement_filters),
                     include_aliases=True,
                 )
-            )
-
-            if education_year_code:
-                query = query.options(
-                    with_loader_criteria(
-                        StudentAchievement,
-                        StudentAchievement.education_year_code == education_year_code,
-                        include_aliases=True,
-                    ),
-                    with_loader_criteria(
-                        GPA,
-                        GPA.education_year_code == education_year_code,
-                        include_aliases=True,
-                    ),
+            ]
+            if gpa_filters:
+                loader_options.append(
+                    with_loader_criteria(GPA, and_(*gpa_filters), include_aliases=True)
                 )
 
+            query = query.options(*loader_options)
+
+            # ---------- Фильтрация самого студента ----------
+            conditions = []
+            if gender:
+                conditions.append(Student.gender_code == gender)
+            if search:
+                conditions.append(Student.full_name.ilike(f"%{search.strip()}%"))
             if education_type_code:
-                query = query.options(
-                    with_loader_criteria(
-                        StudentAchievement,
-                        StudentAchievement.education_type_code == education_type_code,
-                        include_aliases=True,
-                    ),
-                    with_loader_criteria(
-                        GPA,
-                        GPA.education_type_code == education_type_code,
-                        include_aliases=True,
-                    ),
-                )
+                conditions.append(Student.education_type_code == education_type_code)
 
-            if level_code:
-                query = query.options(
-                    with_loader_criteria(
-                        StudentAchievement,
-                        StudentAchievement.level_code == level_code,
-                        include_aliases=True,
-                    ),
-                    with_loader_criteria(
-                        GPA,
-                        GPA.level_code == level_code,
-                        include_aliases=True,
-                    ),
-                )
+            query = query.filter(*conditions)
 
+            # ---------- Выполнение ----------
             result = await session.execute(query)
-            student = result.unique().scalar()
+            student = result.unique().scalar_one_or_none()
+            if not student:
+                return {"data": None}
 
+            # ---------- Формирование результата ----------
             student_achievements_storage = {}
             total_sum = 0
+
             for student_achievement in student.student_achievements:
                 achievement_type = student_achievement.criterias.achievement_type
                 if achievement_type.name not in student_achievements_storage:
@@ -311,33 +218,38 @@ class RatingRepository(BaseRepository):
                         "data": [],
                         "total": 0,
                     }
+
                 student_achievements_storage[achievement_type.name]["data"].append(
                     {
                         "value": student_achievement.value,
                         "id": student_achievement.id,
                         "achievement_id": student_achievement.criterias.achievement_type_id,
-                        "achievement_name": student_achievement.criterias.achievement_type.name,
+                        "achievement_name": achievement_type.name,
                     }
                 )
 
-                student_achievements_storage[achievement_type.name][
-                    "total"
-                ] += student_achievement.value
+                # суммируем
+                total_value = (
+                    student_achievements_storage[achievement_type.name]["total"]
+                    + student_achievement.value
+                )
+                student_achievements_storage[achievement_type.name]["total"] = min(
+                    total_value, achievement_type.max_score
+                )
 
+            # GPA
+            for gpa in student.gpa:
                 if (
-                    achievement_type.max_score
-                    < student_achievements_storage[achievement_type.name]["total"]
+                    not education_year_code
+                    or gpa.education_year_code == education_year_code
                 ):
-                    student_achievements_storage[achievement_type.name][
-                        "total"
-                    ] = achievement_type.max_score
+                    total_sum += gpa.value
 
-            for k, v in student_achievements_storage.items():
-                total_sum += student_achievements_storage[k]["total"]
+            for v in student_achievements_storage.values():
+                total_sum += v["total"]
 
+            # Добавляем поля
             setattr(student, "achievements_summary", student_achievements_storage)
             setattr(student, "total_sum", total_sum)
 
-            return {
-                "data": student,
-            }
+            return {"data": student}

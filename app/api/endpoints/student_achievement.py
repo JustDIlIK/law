@@ -89,7 +89,7 @@ async def add_student_achievement(
     if education_semester < 0 and education_semester > 2:
         return JSONResponse(content="Уже нельзя загрузить за этот период")
 
-    if not achievement_criteria:
+    if not achievement_criteria or not achievement_criteria.achievement_type.is_upload:
         return JSONResponse(content="Не найдено")
 
     edu_year = await EducationYearRepository.find_by_variable(
