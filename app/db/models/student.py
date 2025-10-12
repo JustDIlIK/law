@@ -135,5 +135,7 @@ class Student(User):
     subjects = relationship("StudentSubject", back_populates="student")
     gpa = relationship("GPA", back_populates="student")
 
+    attendance_records = relationship("Attendance", back_populates="student")
+
     def __str__(self):
         return self.full_name

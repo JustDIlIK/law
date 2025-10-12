@@ -41,11 +41,13 @@ from .achievement_type import AchievementType
 from .achievement_criteria import AchievementCriteria
 from .student_achievement import StudentAchievement
 from .status import Status
+from .attendance import Attendance
 from .admin import Admin
 
 __all__ = [
     # справочники (общие)
     "Status",
+    "Attendance",
     "Gender",
     "Country",
     "Citizenship",
