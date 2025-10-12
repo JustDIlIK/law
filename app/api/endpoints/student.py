@@ -20,7 +20,7 @@ async def get_students(
     page: int = 1,
     limit: int = 10,
     education_form: Optional[str] = None,
-    level: Optional[str] = None,
+    education_year_code: Optional[str] = None,
     gender: Optional[str] = None,
     search: Optional[str] = None,
 ):
@@ -46,7 +46,7 @@ async def get_students(
         limit=limit,
         query=search,
         gender_code=gender,
-        level_code=level,
+        education_year_code=education_year_code,
         education_type_code=education_form,
         student_status_code="11",
     )
