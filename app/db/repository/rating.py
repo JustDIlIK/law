@@ -20,7 +20,7 @@ class RatingRepository(BaseRepository):
     async def get_all(
         cls,
         page=1,
-        limit=50,
+        limit=20,
         education_year_code: str = "",
         education_type_code: str = "",
         # level_code: str = "",
@@ -73,49 +73,48 @@ class RatingRepository(BaseRepository):
             students = result.unique().scalars().all()
 
             for student in students:
-                student_achievements_storage = {}
+                achievements_list = []
                 total_sum = 0
+
+                grouped_achievements = {}
+
                 for student_achievement in student.student_achievements:
                     achievement_type = student_achievement.criterias.achievement_type
-                    if achievement_type.name not in student_achievements_storage:
-                        student_achievements_storage[achievement_type.name] = {
-                            "data": [],
-                            "total": 0,
-                        }
-                    student_achievements_storage[achievement_type.name]["data"].append(
-                        {
-                            "value": student_achievement.value,
-                            "id": student_achievement.id,
-                            "achievement_id": student_achievement.criterias.achievement_type_id,
-                            "achievement_name": student_achievement.criterias.achievement_type.name,
-                        }
-                    )
+                    type_name = achievement_type.name
 
-                    student_achievements_storage[achievement_type.name][
+                    if type_name not in grouped_achievements:
+                        grouped_achievements[type_name] = {
+                            "achievement_name": type_name,
+                            "achievement_id": student_achievement.criterias.achievement_type_id,
+                            "total": 0,
+                            "id": student_achievement.id,
+                        }
+
+                    grouped_achievements[type_name][
                         "total"
                     ] += student_achievement.value
 
                     if (
-                        achievement_type.max_score
-                        < student_achievements_storage[achievement_type.name]["total"]
+                        grouped_achievements[type_name]["total"]
+                        > achievement_type.max_score
                     ):
-                        student_achievements_storage[achievement_type.name][
+                        grouped_achievements[type_name][
                             "total"
                         ] = achievement_type.max_score
-                    setattr(
-                        student, "achievements_summary", student_achievements_storage
-                    )
+
+                achievements_list = list(grouped_achievements.values())
+
+                for ach in achievements_list:
+                    total_sum += ach["total"]
 
                 for gpa in student.gpa:
-
                     if (
-                        education_year_code
-                        and gpa.education_year_code == education_year_code
+                        not education_year_code
+                        or gpa.education_year_code == education_year_code
                     ):
-
                         total_sum += gpa.value
-                for k, v in student_achievements_storage.items():
-                    total_sum += student_achievements_storage[k]["total"]
+
+                setattr(student, "achievements_summary", achievements_list)
                 setattr(student, "total_sum", total_sum)
 
             total_query = select(func.count()).select_from(Student)

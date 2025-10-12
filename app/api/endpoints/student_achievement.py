@@ -74,7 +74,7 @@ async def add_student_achievement(
     achievement_criteria_id: int = Body(),
     education_year_code: str = Body(),
     education_type_code: str = Body(),
-    education_semester: int = Body(),
+    education_semester: str = Body(),
     level_code: str = Body(),
     student_comment: str = Body(),
     document: UploadFile | None = None,
@@ -85,9 +85,6 @@ async def add_student_achievement(
     achievement_criteria = await AchievementCriteriaRepository.find_by_id(
         achievement_criteria_id
     )
-
-    if education_semester < 0 and education_semester > 2:
-        return JSONResponse(content="Уже нельзя загрузить за этот период")
 
     if not achievement_criteria or not achievement_criteria.achievement_type.is_upload:
         return JSONResponse(content="Не найдено")
