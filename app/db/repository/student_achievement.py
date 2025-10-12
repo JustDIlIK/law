@@ -26,7 +26,7 @@ class StudentAchievementRepository(BaseRepository):
     ):
         async with async_session() as session:
             offset = (page - 1) * limit
-            print("Here")
+
             query = (
                 select(cls.model)
                 .join(Student)
@@ -38,33 +38,40 @@ class StudentAchievementRepository(BaseRepository):
                     )
                 )
                 .options(joinedload(cls.model.status))
-                .offset(offset)
-                .limit(limit)
                 .order_by(cls.model.added_at.desc())
             )
-            print(f"{education_type_code=}")
-            if is_verified:
-                query = query.filter(cls.model.is_verified.is_(is_verified))
 
+            filters = []
+
+            if is_verified is not None:
+                filters.append(cls.model.is_verified.is_(is_verified))
             if education_year_code:
-                query = query.filter(
-                    cls.model.education_year_code == education_year_code
-                )
+                filters.append(cls.model.education_year_code == education_year_code)
             if education_type_code:
-                query = query.filter(
-                    cls.model.education_type_code == education_type_code
-                )
+                filters.append(cls.model.education_type_code == education_type_code)
             if level_code:
-                query = query.filter(cls.model.level_code == level_code)
+                filters.append(cls.model.level_code == level_code)
             if gender:
-                query = query.filter(Student.gender_code == gender)
+                filters.append(Student.gender_code == gender)
             if search:
-                query = query.filter(Student.full_name.ilike(f"%{search}%"))
+                filters.append(Student.full_name.ilike(f"%{search}%"))
 
-            result = await session.execute(query)
-            result = result.scalars().all()
+            if filters:
+                query = query.filter(*filters)
 
-            return {"data": result, "total": 0}
+            paginated_query = query.limit(limit).offset(offset)
+
+            result = await session.execute(paginated_query)
+            data = result.scalars().unique().all()
+
+            total = await session.scalar(
+                select(func.count())
+                .select_from(cls.model)
+                .join(Student)
+                .filter(*filters)
+            )
+
+            return {"data": data, "total": total}
 
     @classmethod
     async def student_rating(

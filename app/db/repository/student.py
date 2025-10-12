@@ -185,7 +185,9 @@ class StudentRepository(BaseRepository):
             result = await session.execute(stmt)
             students = result.unique().scalars().all()
 
-            total_stmt = select(func.count()).select_from(cls.model)
+            total_stmt = (
+                select(func.count()).select_from(cls.model).filter_by(**filters)
+            )
 
             total = await session.scalar(total_stmt)
 
