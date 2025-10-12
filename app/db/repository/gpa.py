@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from app.db.connection import async_session
 from app.db.models.gpa import GPA
@@ -38,11 +38,14 @@ class GPARepository(BaseRepository):
             if level_code:
                 filters.append(cls.model.level_code == level_code)
 
-            print(f"{filters=}")
             query = query.filter(*filters)
 
             result = await session.execute(query)
 
             gpa = result.scalars().unique().all()
 
-            return {"data": gpa, "total": 0}
+            total = await session.scalar(
+                select(func.count()).select_from(cls.model).filter(*filters)
+            )
+
+            return {"data": gpa, "total": total}

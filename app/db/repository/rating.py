@@ -117,7 +117,7 @@ class RatingRepository(BaseRepository):
                 setattr(student, "achievements_summary", achievements_list)
                 setattr(student, "total_sum", total_sum)
 
-            total_query = select(func.count()).select_from(Student)
+            total_query = select(func.count()).select_from(Student).filter(*conditions)
             total = await session.scalar(total_query)
 
             return {

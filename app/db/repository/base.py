@@ -91,7 +91,7 @@ class BaseRepository:
             result = await session.execute(query)
             result = result.scalars().all()
 
-            total_query = select(func.count()).select_from(cls.model)
+            total_query = select(func.count()).select_from(cls.model).filter_by(**data)
             total = await session.scalar(total_query)
 
             return {
