@@ -22,6 +22,12 @@ from app.api.endpoints.subject import router as subject_router
 from app.api.endpoints.rating import router as rating_router
 from app.api.endpoints.group import router as group_router
 from app.api.endpoints.attendance import router as attendance_router
+from app.api.endpoints.psychology_achievement import (
+    router as psychology_achievement_router,
+)
+from app.api.endpoints.psychology_scoring import (
+    router as psychology_scoring_router,
+)
 from app.api.endpoints.admin import router as admin_router
 
 
@@ -156,6 +162,8 @@ app.include_router(subject_router)
 app.include_router(admin_router)
 app.include_router(group_router)
 app.include_router(attendance_router)
+app.include_router(psychology_achievement_router)
+app.include_router(psychology_scoring_router)
 
 
 if __name__ == "__main__":

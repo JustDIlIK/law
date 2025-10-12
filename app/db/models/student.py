@@ -137,5 +137,7 @@ class Student(User):
 
     attendance_records = relationship("Attendance", back_populates="student")
 
+    psychology_scorings = relationship("PsychologyScoring", back_populates="student")
+
     def __str__(self):
         return self.full_name

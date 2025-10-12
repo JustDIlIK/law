@@ -4,6 +4,8 @@ from .country import Country
 from .citizenship import Citizenship
 from .gpa import GPA
 from .permission import Permission
+from .psychology_achievement import PsychologyAchievement
+from .psychology_scoring import PsychologyScoring
 from .student_status import StudentStatus
 from .education_form import EducationForm
 from .education_type import EducationType
@@ -47,6 +49,8 @@ from .admin import Admin
 __all__ = [
     # справочники (общие)
     "Status",
+    "PsychologyAchievement",
+    "PsychologyScoring",
     "Attendance",
     "Gender",
     "Country",

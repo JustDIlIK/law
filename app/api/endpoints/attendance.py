@@ -46,3 +46,20 @@ async def get_attendance(
     )
 
     return attendance
+
+
+@router.patch("/{id}")
+async def get_attendance(
+    id: int,
+    count: int,
+):
+
+    check_attendance = await AttendanceRepository.update_data(
+        id=id,
+        total_absences=count,
+    )
+
+    if not check_attendance:
+        return JSONResponse(content="Не получилось изменить")
+
+    return check_attendance
