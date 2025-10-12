@@ -61,6 +61,24 @@ class BaseRepository:
     async def find_by_variable(cls, **data):
         async with async_session() as session:
             query = select(cls.model).filter_by(**data)
+
+            mapper = inspect(cls.model)
+            relationships = mapper.relationships
+            fields = relationships.keys()
+            load_options = []
+            for field in fields:
+                rel_property = relationships[field]
+                direction = rel_property.direction
+                use_list = rel_property.uselist
+                if direction == ONETOMANY or use_list is False:
+                    loader = selectinload(getattr(cls.model, field))
+                else:
+                    loader = joinedload(getattr(cls.model, field))
+
+                load_options.append(loader)
+
+            query = query.options(*load_options)
+
             result = await session.execute(query)
             return result.scalar()
 
@@ -91,8 +109,6 @@ class BaseRepository:
     @classmethod
     async def update_data(cls, id: int, **data):
         async with async_session() as session:
-            print(f"{id=}")
-            print(f"{data=}")
             query = (
                 update(cls.model).filter_by(id=id).values(**data).returning(cls.model)
             )

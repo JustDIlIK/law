@@ -18,8 +18,11 @@ from app.api.endpoints.gender import router as gender_router
 from app.api.endpoints.level import router as level_router
 from app.api.endpoints.education_type import router as education_type_router
 from app.api.endpoints.semester import router as semester_type_router
+from app.api.endpoints.subject import router as subject_router
 from app.api.endpoints.rating import router as rating_router
 from app.api.endpoints.admin import router as admin_router
+
+
 from app.api.responses.admin import (
     AdminView,
     GenderView,
@@ -67,7 +70,6 @@ from app.api.responses.admin import (
 from app.api.services.adminAuth import authentication_backend
 
 from app.api.services.scheduler import start_scheduler, stop_scheduler
-from app.config.config import settings
 from app.db.connection import engine
 
 
@@ -148,6 +150,7 @@ app.include_router(level_router)
 app.include_router(education_type_router)
 app.include_router(semester_type_router)
 app.include_router(rating_router)
+app.include_router(subject_router)
 app.include_router(admin_router)
 
 

@@ -13,13 +13,14 @@ router = APIRouter(
 @router.get("")
 async def get_education_years(page: int = 1, limit: int = 15):
 
-    education_years = await EducationYearRepository.get_all(
+    education_years = await EducationYearRepository.find_all_by_variable(
         page,
         limit,
     )
     current_year = str(datetime.now().year)
 
     for education_year in education_years["data"]:
+        print(f"{education_year=}")
         is_current = False
         if education_year.code == current_year:
             is_current = True

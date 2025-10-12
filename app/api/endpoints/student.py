@@ -48,6 +48,7 @@ async def get_students(
         gender_code=gender,
         level_code=level,
         education_type_code=education_form,
+        student_status_code="11",
     )
     return students
 

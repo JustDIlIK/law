@@ -10,13 +10,10 @@ class EducationYear(Base):
     code: Mapped[str] = mapped_column(String(512), unique=True)
     name: Mapped[str] = mapped_column(String(512), nullable=False)
     current: Mapped[bool] = mapped_column(default=False)
+    is_available: Mapped[bool] = mapped_column(default=False, nullable=True)
 
     student_achievements = relationship(
         "StudentAchievement", back_populates="education_year"
-    )
-    semesters = relationship(
-        "EducationSemester",
-        back_populates="education_year",
     )
 
     def __str__(self):

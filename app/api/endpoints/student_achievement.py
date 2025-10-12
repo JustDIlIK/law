@@ -7,6 +7,7 @@ from app.api.schemas.student_achievement import StudentAchievementVerify
 from app.api.services.image import save_image
 from app.config.config import settings
 from app.db.repository.achievement_criteria import AchievementCriteriaRepository
+from app.db.repository.education_year import EducationYearRepository
 from app.db.repository.gpa import GPARepository
 from app.db.repository.semester import SemesterRepository
 from app.db.repository.status import StatusRepository
@@ -78,10 +79,8 @@ async def add_student_achievement(
     student_comment: str = Body(),
     document: UploadFile | None = None,
 ):
-    print(document)
     if document:
         document = await save_image(document, settings.DOCUMENT_URL)
-    print(document)
 
     achievement_criteria = await AchievementCriteriaRepository.find_by_id(
         achievement_criteria_id
@@ -92,6 +91,13 @@ async def add_student_achievement(
 
     if not achievement_criteria:
         return JSONResponse(content="Не найдено")
+
+    edu_year = await EducationYearRepository.find_by_variable(
+        code=education_year_code,
+    )
+
+    if not edu_year.is_available:
+        return JSONResponse(content="Уже нельзя загрузить за этот период")
 
     status_pending = await StatusRepository.find_by_variable(title="pending")
 

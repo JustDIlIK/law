@@ -765,9 +765,18 @@ async def save_student_from_api():
                         name=f"{gpa["educationYear"]["code"]}-{int(gpa["educationYear"]["code"]) + 1}",
                     )
 
+                gpa_score = float(gpa["gpa"]) * 100 / 5
+                gpa_value = -10
+                if 86 >= gpa_score <= 100:
+                    gpa_value = 50
+                elif 85 >= gpa_score <= 71:
+                    gpa_value = 40
+                elif 70 >= gpa_score <= 56:
+                    gpa_value = 30
+
                 await GPARepository.add_record(
                     student_id_number=student.student_id_number,
-                    value=float(gpa["gpa"]),
+                    value=gpa_value,
                     level_code=gpa["level"]["code"],
                     education_type_code=data.get("educationType")["code"],
                     education_year_code=gpa["educationYear"]["code"],

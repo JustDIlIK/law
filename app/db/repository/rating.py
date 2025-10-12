@@ -37,6 +37,9 @@ class RatingRepository(BaseRepository):
                     .selectinload(StudentAchievement.criterias)
                     .selectinload(AchievementCriteria.achievement_type),
                     selectinload(Student.gpa),
+                    with_loader_criteria(
+                        GPA, GPA.education_year_code == education_year_code
+                    ),
                 )
                 .limit(limit)
                 .offset(offset)
@@ -170,16 +173,8 @@ class RatingRepository(BaseRepository):
                         education_year_code
                         and gpa.education_year_code == education_year_code
                     ):
-                        gpa_score = gpa.value * 100 / 5
-                        gpa_value = -10
-                        if 86 >= gpa_score <= 100:
-                            gpa_value = 50
-                        elif 85 >= gpa_score <= 71:
-                            gpa_value = 40
-                        elif 70 >= gpa_score <= 56:
-                            gpa_value = 30
 
-                        total_sum += gpa_value
+                        total_sum += gpa.value
                 for k, v in student_achievements_storage.items():
                     total_sum += student_achievements_storage[k]["total"]
 

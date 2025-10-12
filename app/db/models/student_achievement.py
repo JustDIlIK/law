@@ -60,4 +60,4 @@ class StudentAchievement(Base):
     )
 
     def __str__(self):
-        return self.id
+        return f"{self.student_id_number} - {self.achievement_criteria_id}"

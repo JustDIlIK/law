@@ -10,9 +10,9 @@ router = APIRouter(
 
 @router.get("")
 async def get_rating(
+    education_year_code: str,
     page: int = 1,
     limit: int = 15,
-    education_year_code: str = "",
     education_type_code: str = "",
     level_code: str = "",
     search: str = "",
