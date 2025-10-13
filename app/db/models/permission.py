@@ -17,6 +17,12 @@ role_permissions = Table(
 )
 
 
+class RolePermission(Base):
+    __table__ = role_permissions
+    __abstract__ = False
+    id = None
+
+
 class Permission(Base):
     __tablename__ = "permissions"
 

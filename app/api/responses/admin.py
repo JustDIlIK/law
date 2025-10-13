@@ -45,6 +45,7 @@ from app.db.models import (
     Permission,
 )
 from app.db.models.admin import Admin
+from app.db.models.permission import role_permissions, RolePermission
 
 
 class AdminView(ModelView, model=Admin):
@@ -268,4 +269,9 @@ class StudentSubjectView(ModelView, model=StudentSubject):
 
 class PermissionView(ModelView, model=Permission):
     column_list = [c.name for c in Permission.__table__.c]
+    icon = "fa-solid fa-trophy"
+
+
+class RolePermissionsView(ModelView, model=RolePermission):
+    column_list = [c.name for c in RolePermission.__table__.c]
     icon = "fa-solid fa-trophy"
