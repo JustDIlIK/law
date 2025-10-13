@@ -73,7 +73,6 @@ from app.api.responses.admin import (
     StudentAchievementView,
     StudentSubjectView,
     PermissionView,
-    RolePermissionsView,
 )
 
 from app.api.services.adminAuth import authentication_backend
@@ -136,7 +135,6 @@ admin.add_model_view(AchievementCriteriaView)
 admin.add_model_view(StudentAchievementView)
 admin.add_model_view(StudentSubjectView)
 admin.add_model_view(PermissionView)
-admin.add_model_view(RolePermissionsView)
 
 
 app.add_middleware(
