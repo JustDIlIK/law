@@ -21,6 +21,13 @@ class PsychologyScoring(Base):
         "PsychologyAchievement", back_populates="psychology_scorings"
     )
 
+    education_type_code: Mapped[str] = mapped_column(
+        ForeignKey("education_types.code"),
+        nullable=True,
+    )
+
+    education_type = relationship("EducationType", back_populates="psychology_scorings")
+
     score: Mapped[int]
 
     created_at: Mapped[datetime] = mapped_column(default=func.now())

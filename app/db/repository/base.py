@@ -37,6 +37,8 @@ class BaseRepository:
         async with async_session() as session:
             query = select(cls.model).filter_by(id=record_id)
 
+            print(f"{cls.model=}")
+
             mapper = inspect(cls.model)
             relationships = mapper.relationships
             fields = relationships.keys()

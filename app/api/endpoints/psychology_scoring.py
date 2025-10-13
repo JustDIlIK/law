@@ -15,15 +15,19 @@ router = APIRouter(
 )
 
 
-@router.post("")
+@router.get("")
 async def get_psychology_scoring(
-    data: PsychologyScoringSchemaGet,
+    education_year_code: str,
+    semester_code: str,
     page: int = 1,
     limit: int = 25,
 ):
 
     scoring = await PsychologyScoringRepository.find_all_by_variable(
-        page=page, limit=limit, **data.model_dump()
+        page=page,
+        limit=limit,
+        education_year_code=education_year_code,
+        semester_code=semester_code,
     )
 
     return scoring

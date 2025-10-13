@@ -21,5 +21,9 @@ class EducationType(Base):
         "StudentAchievement", back_populates="education_type"
     )
 
+    psychology_scorings = relationship(
+        "PsychologyScoring", back_populates="education_type"
+    )
+
     def __str__(self):
         return self.name
