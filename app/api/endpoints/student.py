@@ -2,15 +2,7 @@ import asyncio
 from typing import Optional
 
 from fastapi import APIRouter
-from starlette import status
-from starlette.responses import JSONResponse
-
-from app.api.services.hemis_helper import get_student_list, get_employee_list
-from app.db.repository.education_type import EducationTypeRepository
-from app.db.repository.gender import GenderRepository
-from app.db.repository.level import LevelRepository
 from app.db.repository.student import StudentRepository
-from app.db.repository.student_achievement import StudentAchievementRepository
 
 router = APIRouter(prefix="/students", tags=["Студенты"])
 

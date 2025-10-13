@@ -6,6 +6,7 @@ from .gpa import GPA
 from .permission import Permission
 from .psychology_achievement import PsychologyAchievement
 from .psychology_scoring import PsychologyScoring
+from .student_contact import StudentContact
 from .student_status import StudentStatus
 from .education_form import EducationForm
 from .education_type import EducationType
@@ -49,6 +50,7 @@ from .admin import Admin
 __all__ = [
     # справочники (общие)
     "Status",
+    "StudentContact",
     "PsychologyAchievement",
     "PsychologyScoring",
     "Attendance",
