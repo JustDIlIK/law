@@ -23,7 +23,7 @@ class RatingRepository(BaseRepository):
         limit=20,
         education_year_code: str = "",
         education_type_code: str = "",
-        # level_code: str = "",
+        semester_code: str = "",
         search: str = "",
         gender: str = "",
     ):
@@ -37,6 +37,7 @@ class RatingRepository(BaseRepository):
                     selectinload(Student.student_achievements)
                     .selectinload(StudentAchievement.criterias)
                     .selectinload(AchievementCriteria.achievement_type),
+                    selectinload(Student.attendance_records),
                     selectinload(Student.gpa),
                     with_loader_criteria(
                         StudentAchievement,
@@ -45,6 +46,7 @@ class RatingRepository(BaseRepository):
                             StudentAchievement.status_id == status.id,
                             StudentAchievement.education_year_code
                             == education_year_code,
+                            StudentAchievement.education_semester == semester_code,
                         ),
                         include_aliases=True,
                     ),
@@ -129,7 +131,8 @@ class RatingRepository(BaseRepository):
     async def get_all_by_student(
         cls,
         student_id_number: str,
-        education_year_code: str = "",
+        semester_code: str,
+        education_year_code: str,
         education_type_code: str = "",
         search: str = "",
         gender: str = "",
@@ -137,13 +140,12 @@ class RatingRepository(BaseRepository):
         async with async_session() as session:
             status = await StatusRepository.find_by_variable(title="succeed")
 
-            # Базовый запрос
             query = (
                 select(Student)
                 .filter_by(student_id_number=student_id_number)
                 .options(
-                    # Подгрузка зависимостей
                     selectinload(Student.student_achievements)
+                    .selectinload(Student.attendance_records)
                     .selectinload(StudentAchievement.criterias)
                     .selectinload(AchievementCriteria.achievement_type),
                     selectinload(Student.gpa),
@@ -151,9 +153,6 @@ class RatingRepository(BaseRepository):
                 .order_by(Student.education_year_code)
             )
 
-            # ---------- Динамическое построение фильтров ----------
-
-            # Для StudentAchievement
             achievement_filters = [
                 StudentAchievement.is_verified.is_(True),
                 StudentAchievement.status_id == status.id,
@@ -166,15 +165,17 @@ class RatingRepository(BaseRepository):
                 achievement_filters.append(
                     StudentAchievement.education_type_code == education_type_code
                 )
+            if semester_code:
+                achievement_filters.append(
+                    StudentAchievement.education_semester == semester_code
+                )
 
-            # Для GPA
             gpa_filters = []
             if education_year_code:
                 gpa_filters.append(GPA.education_year_code == education_year_code)
             if education_type_code:
                 gpa_filters.append(GPA.education_type_code == education_type_code)
 
-            # Применяем фильтры только если они есть
             loader_options = [
                 with_loader_criteria(
                     StudentAchievement,
@@ -189,7 +190,6 @@ class RatingRepository(BaseRepository):
 
             query = query.options(*loader_options)
 
-            # ---------- Фильтрация самого студента ----------
             conditions = []
             if gender:
                 conditions.append(Student.gender_code == gender)
@@ -200,13 +200,11 @@ class RatingRepository(BaseRepository):
 
             query = query.filter(*conditions)
 
-            # ---------- Выполнение ----------
             result = await session.execute(query)
             student = result.unique().scalar_one_or_none()
             if not student:
                 return {"data": None}
 
-            # ---------- Формирование результата ----------
             student_achievements_storage = {}
             total_sum = 0
 
@@ -227,7 +225,6 @@ class RatingRepository(BaseRepository):
                     }
                 )
 
-                # суммируем
                 total_value = (
                     student_achievements_storage[achievement_type.name]["total"]
                     + student_achievement.value
@@ -236,7 +233,6 @@ class RatingRepository(BaseRepository):
                     total_value, achievement_type.max_score
                 )
 
-            # GPA
             for gpa in student.gpa:
                 if (
                     not education_year_code
@@ -247,8 +243,7 @@ class RatingRepository(BaseRepository):
             for v in student_achievements_storage.values():
                 total_sum += v["total"]
 
-            # Добавляем поля
             setattr(student, "achievements_summary", student_achievements_storage)
             setattr(student, "total_sum", total_sum)
 
-            return {"data": student}
+            return student

@@ -51,6 +51,7 @@ class AdminView(ModelView, model=Admin):
     column_list = [Admin.id, Admin.email]
     column_details_exclude_list = [Admin.password]
     can_delete = False
+    can_create = False
     can_edit = False
     icon = "fa-solid fa-user"
 
@@ -213,11 +214,15 @@ class RoleView(ModelView, model=Role):
 class UserView(ModelView, model=User):
     column_list = [c.name for c in User.__table__.c]
     icon = "fa-solid fa-trophy"
+    column_searchable_list = [User.full_name]
+    form_excluded_columns = [User.password, User.login]
 
 
 class StudentView(ModelView, model=Student):
     column_list = [c.name for c in Student.__table__.c]
     icon = "fa-solid fa-trophy"
+
+    form_excluded_columns = [col.key for col in Student.__table__.columns]
 
 
 class StudentHistoryView(ModelView, model=StudentHistory):
@@ -228,6 +233,7 @@ class StudentHistoryView(ModelView, model=StudentHistory):
 class EmployeeView(ModelView, model=Employee):
     column_list = [c.name for c in Employee.__table__.c]
     icon = "fa-solid fa-trophy"
+    form_excluded_columns = [col.key for col in Student.__table__.columns]
 
 
 class EmployeeHistoryView(ModelView, model=EmployeeHistory):

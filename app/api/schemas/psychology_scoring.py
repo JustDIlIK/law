@@ -19,7 +19,7 @@ class PsychologyScoringSchema(BaseModel):
 
 
 class PsychologyScoringSchemaPatch(BaseModel):
-    psychology_achievement_id: Optional[int] = None
+    psychology_scoring_id: Optional[int] = None
     score: Optional[int] = None
     student_id_number: Optional[str] = None
     education_year_code: Optional[str] = None

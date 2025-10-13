@@ -98,7 +98,7 @@ class StudentRepository(BaseRepository):
             return result.scalars().all()
 
     @classmethod
-    async def find_all_by_variable(cls, page=1, limit=50, **data):
+    async def find_all_by_variable(cls, page=1, limit=20, **data):
         async with async_session() as session:
 
             offset = (page - 1) * limit

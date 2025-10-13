@@ -10,7 +10,7 @@ router = APIRouter(
 
 
 @router.get("")
-async def get_semesters(user=Depends(check_permission)):
+async def get_semesters():
     semesters = await SemesterRepository.get_all()
 
     return semesters

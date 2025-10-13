@@ -844,4 +844,4 @@ async def get_semesters():
                 )
 
 
-# asyncio.run(save_student_from_api())
+# asyncio.run(get_student_list())

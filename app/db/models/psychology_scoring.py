@@ -40,6 +40,7 @@ class PsychologyScoring(Base):
 
     __table_args__ = (
         UniqueConstraint(
+            "psychology_achievement_id",
             "student_id_number",
             "education_year_code",
             "semester_code",

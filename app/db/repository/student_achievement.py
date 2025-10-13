@@ -36,8 +36,9 @@ class StudentAchievementRepository(BaseRepository):
 
             query = (
                 select(cls.model)
-                .join(cls.model.criterias)  # ✅ реальный JOIN
+                .join(cls.model.criterias)
                 .options(joinedload(cls.model.student))
+                .options(joinedload(cls.model.status))
                 .options(
                     joinedload(cls.model.criterias).joinedload(
                         AchievementCriteria.achievement_type

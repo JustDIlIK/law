@@ -25,6 +25,10 @@ class Attendance(Base):
         default=func.now(), onupdate=func.now()
     )
 
+    student_achievement_id: Mapped[int] = mapped_column(
+        ForeignKey("student_achievements.id"), nullable=True
+    )
+
     __table_args__ = (
         UniqueConstraint(
             "student_id_number",
