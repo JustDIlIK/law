@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import insert, select, update, inspect
+from sqlalchemy import insert, select, update, inspect, func
+from sqlalchemy.orm import ONETOMANY, selectinload, joinedload
 
 from app.api.services.dates import from_seconds_to_date
 from app.db.connection import async_session
@@ -21,6 +22,39 @@ def filter_model_fields(model, data) -> dict:
 
 class EmployeeRepository(BaseRepository):
     model = Employee
+
+    @classmethod
+    async def get_all(cls, page=1, limit=10):
+        async with async_session() as session:
+            offset = (page - 1) * limit
+            query = select(cls.model).limit(limit).offset(offset).order_by(cls.model.id)
+
+            mapper = inspect(cls.model)
+            relationships = mapper.relationships
+            fields = relationships.keys()
+            load_options = []
+            for field in fields:
+                rel_property = relationships[field]
+                direction = rel_property.direction
+                use_list = rel_property.uselist
+                if direction == ONETOMANY or use_list is False:
+                    loader = selectinload(getattr(cls.model, field))
+                else:
+                    loader = joinedload(getattr(cls.model, field))
+
+                load_options.append(loader)
+
+            query = query.options(*load_options)
+            result = await session.execute(query)
+            result = result.unique().scalars().all()
+
+            total_query = select(func.count()).select_from(cls.model)
+            total = await session.scalar(total_query)
+
+            return {
+                "data": result,
+                "total": total,
+            }
 
     @classmethod
     async def add_record(cls, **data):
