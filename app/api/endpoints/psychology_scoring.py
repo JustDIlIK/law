@@ -19,6 +19,7 @@ router = APIRouter(
 async def get_psychology_scoring(
     education_year_code: str,
     semester_code: str,
+    education_type_code: str,
     page: int = 1,
     limit: int = 25,
 ):
@@ -27,6 +28,7 @@ async def get_psychology_scoring(
         page=page,
         limit=limit,
         education_year_code=education_year_code,
+        education_type_code=education_type_code,
         semester_code=semester_code,
     )
 
