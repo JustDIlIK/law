@@ -43,6 +43,8 @@ from app.db.models import (
     StudentAchievement,
     StudentSubject,
     Permission,
+    StudentContact,
+    StudentEducationHistory,
 )
 from app.db.models.admin import Admin
 
@@ -268,4 +270,14 @@ class StudentSubjectView(ModelView, model=StudentSubject):
 
 class PermissionView(ModelView, model=Permission):
     column_list = [c.name for c in Permission.__table__.c]
+    icon = "fa-solid fa-trophy"
+
+
+class StudentContactView(ModelView, model=StudentContact):
+    column_list = [c.name for c in StudentContact.__table__.c]
+    icon = "fa-solid fa-trophy"
+
+
+class StudentEducationHistoryView(ModelView, model=StudentEducationHistory):
+    column_list = [c.name for c in StudentEducationHistory.__table__.c]
     icon = "fa-solid fa-trophy"

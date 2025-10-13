@@ -1,5 +1,6 @@
 import asyncio
 import math
+import re
 import time
 import uuid
 from collections import Counter
@@ -49,6 +50,9 @@ from app.db.repository.status import StatusRepository
 from app.db.repository.structure_type import StructureTypeRepository
 from app.db.repository.student import StudentRepository
 from app.db.repository.student_achievement import StudentAchievementRepository
+from app.db.repository.student_education_history import (
+    StudentEducationHistoryRepository,
+)
 from app.db.repository.student_status import StudentStatusRepository
 from app.db.repository.student_subject import StudentSubjectRepository
 from app.db.repository.student_type import StudentTypeRepository
@@ -668,6 +672,28 @@ async def add_student(students_list: list):
 
         is_created = await StudentRepository.add_record(**stud)
 
+        pattern = re.compile(
+            r"""
+                    ^\s*
+                    (?P<started_year>\d{4})               
+                    (?:-(?P<ended_year>\d{4}))?          
+                    \s*,\s*
+                    (?P<place>[^,]+)          
+                    """,
+            re.VERBOSE,
+        )
+        match = pattern.match(student_element["other"])
+
+        if match:
+            result_match = match.groupdict()
+
+            place = result_match.pop("place").strip().capitalize()
+            await StudentEducationHistoryRepository.add_record(
+                student_id_number=student_element["student_id_number"],
+                place=place,
+                **result_match,
+            )
+
         # Фото
 
         student_image = student_element["image"]
@@ -774,14 +800,20 @@ async def save_student_from_api():
                 elif 70 >= gpa_score <= 56:
                     gpa_value = 30
 
-                await GPARepository.add_record(
-                    student_id_number=student.student_id_number,
-                    value=gpa_value,
-                    level_code=gpa["level"]["code"],
-                    education_type_code=data.get("educationType")["code"],
-                    education_year_code=gpa["educationYear"]["code"],
-                    added_at=datetime.fromtimestamp(gpa["created_at"]),
-                )
+                if gpa_criteria.education_year_code == gpa["educationYear"]["code"]:
+                    await GPARepository.update_data(
+                        gpa_criteria.id,
+                        value=gpa_value,
+                    )
+                else:
+                    await GPARepository.add_record(
+                        student_id_number=student.student_id_number,
+                        value=gpa_value,
+                        level_code=gpa["level"]["code"],
+                        education_type_code=data.get("educationType")["code"],
+                        education_year_code=gpa["educationYear"]["code"],
+                        added_at=datetime.fromtimestamp(gpa["created_at"]),
+                    )
 
             for subj in data.get("subjects", []):
                 current_subject = await StudentSubjectRepository.find_by_variable(

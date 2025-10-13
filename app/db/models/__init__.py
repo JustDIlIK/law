@@ -7,6 +7,7 @@ from .permission import Permission
 from .psychology_achievement import PsychologyAchievement
 from .psychology_scoring import PsychologyScoring
 from .student_contact import StudentContact
+from .student_education_history import StudentEducationHistory
 from .student_status import StudentStatus
 from .education_form import EducationForm
 from .education_type import EducationType
@@ -51,6 +52,7 @@ __all__ = [
     # справочники (общие)
     "Status",
     "StudentContact",
+    "StudentEducationHistory",
     "PsychologyAchievement",
     "PsychologyScoring",
     "Attendance",

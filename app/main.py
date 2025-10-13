@@ -23,6 +23,9 @@ from app.api.endpoints.rating import router as rating_router
 from app.api.endpoints.group import router as group_router
 from app.api.endpoints.attendance import router as attendance_router
 from app.api.endpoints.student_contact import router as student_contact_router
+from app.api.endpoints.student_education_history import (
+    router as student_education_history_router,
+)
 from app.api.endpoints.psychology_achievement import (
     router as psychology_achievement_router,
 )
@@ -74,6 +77,8 @@ from app.api.responses.admin import (
     StudentAchievementView,
     StudentSubjectView,
     PermissionView,
+    StudentContactView,
+    StudentEducationHistoryView,
 )
 
 from app.api.services.adminAuth import authentication_backend
@@ -136,6 +141,8 @@ admin.add_model_view(AchievementCriteriaView)
 admin.add_model_view(StudentAchievementView)
 admin.add_model_view(StudentSubjectView)
 admin.add_model_view(PermissionView)
+admin.add_model_view(StudentContactView)
+admin.add_model_view(StudentEducationHistoryView)
 
 
 app.add_middleware(
@@ -165,6 +172,7 @@ app.include_router(group_router)
 app.include_router(attendance_router)
 app.include_router(psychology_achievement_router)
 app.include_router(student_contact_router)
+app.include_router(student_education_history_router)
 app.include_router(psychology_scoring_router)
 
 

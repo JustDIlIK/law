@@ -22,7 +22,6 @@ async def check_achievements(
     )
     mark = 5
     change_attendance = None
-
     for attendance_score in attendance_scores["data"]:
         if attendance_score.score == mark:
             change_attendance = attendance_score
@@ -47,15 +46,15 @@ async def check_achievements(
     if behavior_element and status and attendance_element:
         for student in students:
 
-            year_dif = int(education_year_code) - student.year_of_enter
+            year_dif = int(student.education_year_code) - student.year_of_enter
             need_add = 0
+            print(year_dif)
+
             if datetime.now().month not in [9, 10, 11, 12, 1, 2]:
                 need_add += 1
-            if (
-                0 <= year_dif < 5
-                and int(education_year_code) >= student.year_of_enter
-                and student.student_status_code == "11"
-            ):
+            if 0 <= year_dif < 5 and student.student_status_code == "11":
+                print("Here")
+
                 semester_num = str(11 + need_add + (year_dif * 2))
                 is_added_attendance = await AttendanceRepository.find_by_variable(
                     education_year_code=education_year_code,

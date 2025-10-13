@@ -35,7 +35,7 @@ async def add_contact(data: StudentContactSchema):
 
 
 @router.patch("/change/{student_id_number}")
-async def add_contact(student_id_number: str, data: StudentContactSchemaPatch):
+async def change_contact(student_id_number: str, data: StudentContactSchemaPatch):
 
     old = await StudentContactRepository.find_by_variable(
         student_id_number=student_id_number,
