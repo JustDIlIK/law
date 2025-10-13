@@ -1,14 +1,14 @@
 from sqlalchemy import ForeignKey, Column, Table
 
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped, relationship, mapped_column
 
 from app.db.connection import Base
 
 
-user_permissions = Table(
-    "user_permissions",
+role_permissions = Table(
+    "role_permissions",
     Base.metadata,
-    Column("user_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("role_id", ForeignKey("roles.id", ondelete="CASCADE"), primary_key=True),
     Column(
         "permission_id",
         ForeignKey("permissions.id", ondelete="CASCADE"),
@@ -21,10 +21,11 @@ class Permission(Base):
     __tablename__ = "permissions"
 
     name: Mapped[str]
+    education_type_code: Mapped[str | None] = mapped_column(nullable=True)
 
-    users = relationship(
-        "User",
-        secondary=user_permissions,
+    roles = relationship(
+        "Role",
+        secondary=role_permissions,
         back_populates="permissions",
     )
 

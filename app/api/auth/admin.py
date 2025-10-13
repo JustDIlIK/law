@@ -18,12 +18,11 @@ def get_token(request: Request):
 
 async def get_current_user(token: str):
     try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
+        print("Here")
+        payload = jwt.decode(token, settings.KEY, algorithms=[settings.ALGORITHM])
     except JWTError:
         raise HTTPException(status_code=401, detail="Неверный токен")
-
+    print("Here")
     exp = payload.get("exp")
     if not exp or int(exp) < datetime.utcnow().timestamp():
         raise HTTPException(status_code=401, detail="Токен истёк")

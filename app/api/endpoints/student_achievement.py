@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import List
 
-from fastapi import APIRouter, UploadFile, HTTPException, Body
+from fastapi import APIRouter, UploadFile, HTTPException, Body, Query
 from starlette.responses import JSONResponse
 
 from app.api.schemas.student_achievement import StudentAchievementVerify
@@ -27,6 +28,8 @@ async def get_all_achievements(
     gender: str = "",
     status: str = "",
     is_verified: bool = None,
+    criterias: list[int] = Query(default=[]),
+    criterias_achievements: list[int] = Query(default=[]),
 ):
 
     achievements = await StudentAchievementRepository.get_with_achievements(
@@ -39,6 +42,8 @@ async def get_all_achievements(
         search=search,
         gender=gender,
         is_verified=is_verified,
+        criterias=criterias,
+        criterias_achievements=criterias_achievements,
     )
 
     return achievements
@@ -121,6 +126,8 @@ async def get_student_rating(
     achievement_criteria_id: int = None,
     page: int = 1,
     limit: int = 15,
+    criterias: list[int] = Query(default=[]),
+    criterias_achievements: list[int] = Query(default=[]),
 ):
     result = await StudentAchievementRepository.student_rating(
         student_id_number=student_id_number,
@@ -128,6 +135,8 @@ async def get_student_rating(
         achievement_criteria_id=achievement_criteria_id,
         page=page,
         limit=limit,
+        criterias=criterias,
+        criterias_achievements=criterias_achievements,
     )
 
     return result

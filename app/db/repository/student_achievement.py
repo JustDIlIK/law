@@ -2,7 +2,12 @@ from sqlalchemy import select, func, inspect
 from sqlalchemy.orm import joinedload, selectinload, ONETOMANY, contains_eager
 
 from app.db.connection import async_session
-from app.db.models import StudentAchievement, Student, AchievementCriteria
+from app.db.models import (
+    StudentAchievement,
+    Student,
+    AchievementCriteria,
+    AchievementType,
+)
 from app.db.repository.base import BaseRepository
 from app.db.repository.gpa import GPARepository
 from app.db.repository.status import StatusRepository
@@ -23,21 +28,21 @@ class StudentAchievementRepository(BaseRepository):
         search: str = "",
         gender: str = "",
         status: str = "",
+        criterias: list = [],
+        criterias_achievements: list = [],
     ):
         async with async_session() as session:
             offset = (page - 1) * limit
 
             query = (
                 select(cls.model)
-                .join(Student)
+                .join(cls.model.criterias)  # ✅ реальный JOIN
                 .options(joinedload(cls.model.student))
-                .join(cls.model.criterias)
                 .options(
-                    contains_eager(cls.model.criterias).joinedload(
+                    joinedload(cls.model.criterias).joinedload(
                         AchievementCriteria.achievement_type
                     )
                 )
-                .options(joinedload(cls.model.status))
                 .order_by(cls.model.added_at.desc())
             )
 
@@ -55,19 +60,27 @@ class StudentAchievementRepository(BaseRepository):
                 filters.append(Student.gender_code == gender)
             if search:
                 filters.append(Student.full_name.ilike(f"%{search}%"))
-
+            if criterias:
+                filters.append(AchievementCriteria.achievement_type_id.in_(criterias))
+            if criterias_achievements:
+                filters.append(
+                    cls.model.criterias.has(
+                        AchievementCriteria.id.in_(criterias_achievements)
+                    )
+                )
             if filters:
                 query = query.filter(*filters)
 
             paginated_query = query.limit(limit).offset(offset)
 
             result = await session.execute(paginated_query)
-            data = result.scalars().unique().all()
+            data = result.unique().scalars().all()
 
             total = await session.scalar(
-                select(func.count())
+                select(func.count(func.distinct(cls.model.id)))
                 .select_from(cls.model)
                 .join(Student)
+                .join(cls.model.criterias)
                 .filter(*filters)
             )
 
@@ -81,6 +94,8 @@ class StudentAchievementRepository(BaseRepository):
         achievement_criteria_id: int,
         page: int = 1,
         limit: int = 15,
+        criterias: list = [],
+        criterias_achievements: list = [],
     ):
         offset = (page - 1) * limit
 
@@ -104,6 +119,14 @@ class StudentAchievementRepository(BaseRepository):
                 filters.append(
                     StudentAchievement.achievement_criteria_id
                     == achievement_criteria_id
+                )
+            if criterias:
+                filters.append(AchievementCriteria.achievement_type_id.in_(criterias))
+            if criterias_achievements:
+                filters.append(
+                    cls.model.criterias.has(
+                        AchievementCriteria.id.in_(criterias_achievements)
+                    )
                 )
             if status:
 

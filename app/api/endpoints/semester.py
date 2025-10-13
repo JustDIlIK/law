@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from app.api.dependencies.permissions import check_permission
 from app.db.repository.semester import SemesterRepository
 
 router = APIRouter(
@@ -8,7 +10,7 @@ router = APIRouter(
 
 
 @router.get("")
-async def get_semesters():
+async def get_semesters(user=Depends(check_permission)):
     semesters = await SemesterRepository.get_all()
 
     return semesters

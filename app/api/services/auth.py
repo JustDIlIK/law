@@ -16,7 +16,6 @@ def get_hashed_password(password: str) -> str:
 
 
 def verify_password(password: str, hashed_pass: str) -> bool:
-    print(password_context.verify(password, hashed_pass))
     return password_context.verify(password, hashed_pass)
 
 
@@ -24,7 +23,7 @@ def create_access_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(hours=3)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.KEY, settings.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, settings.KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
 
