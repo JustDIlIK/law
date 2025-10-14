@@ -332,7 +332,6 @@ async def add_student(students_list: list):
         student_role = await RoleRepository.add_record(name="student")
 
     for student_element in students_list:
-        print(f"{student_element["image"]=}")
 
         check_user = await UserRepository.find_by_variable(
             first_name=student_element["first_name"],

@@ -141,28 +141,41 @@ class StudentRepository(BaseRepository):
     @classmethod
     async def find_students(
         cls,
+        education_year_code: str,
+        semester_code: str,
         page: int = 1,
         limit: int = 50,
         query: str = "",
-        **filters,
+        gender_code: str = "",
+        education_type_code: str = "",
+        student_status_code: str = "",
+        level_code: str = "",
     ):
         async with async_session() as session:
             offset = (page - 1) * limit
             stmt = select(cls.model).limit(limit).offset(offset)
-            print(f"{filters=}")
-            print(f"{query=}")
 
-            filters = {k: v for k, v in filters.items() if v is not None}
+            filters = []
 
-            if filters:
-                stmt = stmt.filter_by(**filters)
+            if education_year_code:
+                filters.append(cls.model.education_year_code == education_year_code)
+            if semester_code:
+                filters.append(cls.model.semester_code == semester_code)
+            if gender_code:
+                filters.append(cls.model.gender_code == gender_code)
+            if education_type_code:
+                filters.append(cls.model.education_type_code == education_type_code)
+            if student_status_code:
+                filters.append(cls.model.student_status_code == student_status_code)
+            if level_code:
+                filters.append(cls.model.level_code == level_code)
+
             if query:
                 stmt = stmt.filter(cls.model.full_name.ilike(f"%{query}%"))
 
-            # if level:
-            #     stmt = stmt.filter(cls.model.level_code == level)
-            # if gender:
-            #     stmt = stmt.filter(cls.model.gender_code == gender)
+            if filters:
+                stmt = stmt.filter(*filters)
+
             mapper = inspect(cls.model)
             load_options = []
             for field, rel_property in mapper.relationships.items():
@@ -194,10 +207,11 @@ class StudentRepository(BaseRepository):
             result = await session.execute(stmt)
             students = result.unique().scalars().all()
 
-            total_stmt = (
-                select(func.count()).select_from(cls.model).filter_by(**filters)
-            )
-
+            total_stmt = select(func.count()).select_from(cls.model)
+            if filters:
+                total_stmt = total_stmt.filter(*filters)
+            if query:
+                total_stmt = total_stmt.filter(cls.model.full_name.ilike(f"%{query}%"))
             total = await session.scalar(total_stmt)
 
             return {

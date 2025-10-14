@@ -12,12 +12,12 @@ router = APIRouter(prefix="/students", tags=["Студенты"])
 
 @router.get("")
 async def get_students(
+    education_year_code: str,
+    semester_code: str,
     page: int = 1,
     limit: int = 10,
     level_code: Optional[str] = None,
-    education_form: Optional[str] = None,
-    semester_code: Optional[str] = None,
-    education_year_code: Optional[str] = None,
+    education_type_code: Optional[str] = None,
     gender: Optional[str] = None,
     search: Optional[str] = None,
 ):
@@ -45,7 +45,7 @@ async def get_students(
         gender_code=gender,
         education_year_code=education_year_code,
         semester_code=semester_code,
-        education_type_code=education_form,
+        education_type_code=education_type_code,
         student_status_code="11",
         level_code=level_code,
     )
