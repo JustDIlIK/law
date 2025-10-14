@@ -2,6 +2,9 @@ import asyncio
 from typing import Optional
 
 from fastapi import APIRouter
+from starlette.requests import Request
+
+from app.api.services.check_data import check_achievements
 from app.db.repository.student import StudentRepository
 
 router = APIRouter(prefix="/students", tags=["Студенты"])
@@ -13,6 +16,7 @@ async def get_students(
     limit: int = 10,
     level_code: Optional[str] = None,
     education_form: Optional[str] = None,
+    semester_code: Optional[str] = None,
     education_year_code: Optional[str] = None,
     gender: Optional[str] = None,
     search: Optional[str] = None,
@@ -40,10 +44,12 @@ async def get_students(
         query=search,
         gender_code=gender,
         education_year_code=education_year_code,
+        semester_code=semester_code,
         education_type_code=education_form,
         student_status_code="11",
         level_code=level_code,
     )
+
     return students
 
 
@@ -66,6 +72,15 @@ async def get_by_education_year(
     )
 
     return students
+
+
+@router.get("/rating/{student_id_number}")
+async def get_student(student_id_number: str):
+
+    student = await StudentRepository.find_by_variable(
+        student_id_number=student_id_number
+    )
+    return student
 
 
 @router.post("/search")

@@ -5,7 +5,7 @@ from app.db.repository.rating import RatingRepository
 
 router = APIRouter(
     prefix="/rating",
-    tags=["GPA"],
+    tags=["Рейтинг"],
 )
 
 
@@ -30,7 +30,11 @@ async def get_rating(
         gender=gender,
     )
 
-    is_updated = await check_achievements(results["data"], education_year_code)
+    is_updated = await check_achievements(
+        students=results["data"],
+        education_year_code=education_year_code,
+        semester_code=semester_code,
+    )
 
     if is_updated:
         results = await RatingRepository.get_all(

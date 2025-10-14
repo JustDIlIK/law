@@ -166,7 +166,19 @@ class StudentRepository(BaseRepository):
             mapper = inspect(cls.model)
             load_options = []
             for field, rel_property in mapper.relationships.items():
-                if field == "group":
+                if field in [
+                    "group",
+                    "subjects",
+                    "student_achievements",
+                    "university",
+                    "citizenship",
+                    "education_form",
+                    "payment_form",
+                    "student_type",
+                    "social_category",
+                    "accommodation",
+                    "specialty",
+                ]:
                     continue
                 loader = (
                     selectinload(getattr(cls.model, field))

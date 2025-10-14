@@ -223,6 +223,7 @@ class UserView(ModelView, model=User):
 class StudentView(ModelView, model=Student):
     column_list = [c.name for c in Student.__table__.c]
     icon = "fa-solid fa-trophy"
+    column_searchable_list = [Student.id]
 
     form_excluded_columns = [col.key for col in Student.__table__.columns]
 

@@ -12,6 +12,7 @@ from httpx import AsyncClient
 from sqlalchemy import select
 
 from app.api.services.auth import get_hashed_password
+from app.api.services.check_data import check_achievements
 from app.api.services.dates import from_seconds_to_date
 from app.api.services.image import download_image
 from app.config.config import settings
@@ -57,6 +58,7 @@ from app.db.repository.student_status import StudentStatusRepository
 from app.db.repository.student_subject import StudentSubjectRepository
 from app.db.repository.student_type import StudentTypeRepository
 from app.db.repository.university import UniversityRepository
+from app.db.repository.user import UserRepository
 
 
 async def fetch_employees(
@@ -108,7 +110,7 @@ async def fetch_student(
 
 
 async def add_employee(employees_list: list, outsider_list: list = []):
-    await get_semesters()
+    # await get_semesters()
 
     if not employees_list:
         employees_list = outsider_list.copy()
@@ -330,6 +332,20 @@ async def add_student(students_list: list):
         student_role = await RoleRepository.add_record(name="student")
 
     for student_element in students_list:
+        print(f"{student_element["image"]=}")
+
+        check_user = await UserRepository.find_by_variable(
+            first_name=student_element["first_name"],
+            second_name=student_element["second_name"],
+            third_name=student_element["third_name"],
+        )
+
+        check_student = await StudentRepository.find_by_variable(
+            student_id_number=student_element["student_id_number"],
+        )
+
+        if check_user and check_student:
+            continue
 
         # Универ
 
@@ -660,18 +676,31 @@ async def add_student(students_list: list):
         stud["education_year_code"] = education_year.code
 
         # Семестр
-
-        student_semester = student_element["semester"]
-        semester = await SemesterRepository.find_by_variable(
-            code=student_semester["code"]
-        )
+        student_semester = "1" if int(student_element["semester"]["code"]) % 2 else "2"
+        semester = await SemesterRepository.find_by_variable(code=student_semester)
         if not semester:
-            student_semester["academic_year_code"] = student_education_year["code"]
-            semester = await SemesterRepository.add_record(**student_semester)
-        stud["semester_code"] = semester.code
+            semester = await SemesterRepository.add_record(
+                code=student_semester,
+                name=student_semester,
+            )
+        stud["semester_code"] = student_semester
+        # Фото
+        student_image = student_element["image"]
+        if student_image:
+            filename = uuid.uuid4()
+            filetype = student_image.split(".")[-1]
+            stud["image_url"] = f"uploads/students/{filename}.{filetype}"
+            await download_image(student_image, stud["image_url"])
 
-        is_created = await StudentRepository.add_record(**stud)
+        await StudentRepository.add_record(**stud)
 
+        student_take = await StudentRepository.find_by_variable(
+            student_id_number=stud["student_id_number"]
+        )
+
+        await check_achievements(
+            [student_take], student_take.education_year_code, student_take.group_id
+        )
         pattern = re.compile(
             r"""
                     ^\s*
@@ -683,7 +712,6 @@ async def add_student(students_list: list):
             re.VERBOSE,
         )
         match = pattern.match(student_element["other"])
-
         if match:
             result_match = match.groupdict()
 
@@ -694,18 +722,9 @@ async def add_student(students_list: list):
                 **result_match,
             )
 
-        # Фото
-
-        student_image = student_element["image"]
-        if student_image and is_created:
-            filename = uuid.uuid4()
-            filetype = student_image.split(".")[-1]
-            stud["image_url"] = f"uploads/students/{filename}.{filetype}"
-            await download_image(student_image, stud["image_url"])
-
 
 async def get_student_list():
-    await get_semesters()
+    # await get_semesters()
 
     page = 1
     limit = 200
@@ -733,7 +752,7 @@ async def get_student_list():
 
 
 async def save_student_from_api():
-    await get_semesters()
+    # await get_semesters()
     page = 1
     limit = 100
     index = 1
@@ -760,6 +779,7 @@ async def save_student_from_api():
 
                 if data:
                     break
+            print(f"{student.student_id_number=}")
 
             data = data["data"]
 
@@ -800,7 +820,10 @@ async def save_student_from_api():
                 elif 70 >= gpa_score <= 56:
                     gpa_value = 30
 
-                if gpa_criteria.education_year_code == gpa["educationYear"]["code"]:
+                if (
+                    gpa_criteria
+                    and gpa_criteria.education_year_code == gpa["educationYear"]["code"]
+                ):
                     await GPARepository.update_data(
                         gpa_criteria.id,
                         value=gpa_value,

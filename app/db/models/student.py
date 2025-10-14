@@ -38,8 +38,7 @@ class Student(User):
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"))
     group: Mapped[Group] = relationship("Group")
 
-    semester_code: Mapped[str] = mapped_column(ForeignKey("semesters.code"))
-    semester: Mapped[Semester] = relationship("Semester")
+    semester_code: Mapped[str]
 
     education_year_code: Mapped[str] = mapped_column(ForeignKey("education_years.code"))
     education_year: Mapped[EducationYear] = relationship("EducationYear")

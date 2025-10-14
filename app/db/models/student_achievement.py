@@ -31,9 +31,7 @@ class StudentAchievement(Base):
     education_year_code: Mapped[str] = mapped_column(
         ForeignKey("education_years.code"), nullable=False
     )
-    education_semester: Mapped[str] = mapped_column(
-        ForeignKey("semesters.code"), nullable=True
-    )
+    education_semester: Mapped[str]
     education_type_code: Mapped[str] = mapped_column(
         ForeignKey("education_types.code"), nullable=True
     )

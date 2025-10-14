@@ -20,17 +20,32 @@ router = APIRouter(
 
 
 @router.get("/")
-async def get_attendance(education_year: str, semester: str, group_id: int):
+async def get_attendance(
+    education_year: str,
+    semester: str,
+    group_id: int,
+    gender: str = "",
+    level: str = "",
+):
 
-    students = await AttendanceRepository.get_by_group(group_id=group_id)
-
+    students = await AttendanceRepository.get_by_group(
+        study_year=education_year,
+        group_id=group_id,
+    )
+    print(f"{students=}")
     is_updated = await check_achievements(
         students["data"],
         education_year,
+        semester,
         group_id,
     )
-    if is_updated:
-        students = await AttendanceRepository.get_by_group(group_id=group_id)
+    students = await AttendanceRepository.get_by_group(
+        education_year=education_year,
+        semester=semester,
+        group_id=group_id,
+        gender=gender,
+        level=level,
+    )
 
     return students
 
@@ -72,13 +87,14 @@ async def get_attendance(
         id=id,
         total_absences=count,
     )
-
+    print(f"{check_attendance=}")
     if not check_attendance:
         return JSONResponse(
             content="Не получилось изменить", status_code=status.HTTP_400_BAD_REQUEST
         )
 
     attendance = await AchievementTypeRepository.find_by_variable(name="Attendance")
+    print(f"{attendance=}")
 
     if not attendance:
         return JSONResponse(

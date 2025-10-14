@@ -10,7 +10,6 @@ from app.config.config import settings
 from app.db.repository.achievement_criteria import AchievementCriteriaRepository
 from app.db.repository.education_year import EducationYearRepository
 from app.db.repository.gpa import GPARepository
-from app.db.repository.semester import SemesterRepository
 from app.db.repository.status import StatusRepository
 from app.db.repository.student_achievement import StudentAchievementRepository
 

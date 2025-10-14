@@ -18,7 +18,7 @@ class StudentSubject(Base):
     exam_finish_code: Mapped[str]
     exam_finish_name: Mapped[str]
 
-    semester_code: Mapped[str] = mapped_column(ForeignKey("semesters.code"))
+    semester_code: Mapped[str]
 
     credit: Mapped[int] = mapped_column(nullable=True)
     total_acload: Mapped[int] = mapped_column(nullable=True)

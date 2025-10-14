@@ -30,7 +30,9 @@ class RatingRepository(BaseRepository):
         async with async_session() as session:
             offset = (page - 1) * limit
             status = await StatusRepository.find_by_variable(title="succeed")
-
+            print(f"{education_year_code=}")
+            print(f"{education_type_code=}")
+            # print(f"{semester_code=}")
             query = (
                 select(Student)
                 .options(
@@ -55,6 +57,20 @@ class RatingRepository(BaseRepository):
                         GPA.education_year_code == education_year_code,
                         include_aliases=True,
                     ),
+                )
+                .filter(
+                    or_(
+                        Student.gpa.any(GPA.education_year_code == education_year_code),
+                        Student.student_achievements.any(
+                            and_(
+                                StudentAchievement.is_verified.is_(True),
+                                StudentAchievement.status_id == status.id,
+                                StudentAchievement.education_year_code
+                                == education_year_code,
+                                # StudentAchievement.education_semester == semester_code,
+                            )
+                        ),
+                    )
                 )
                 .offset(offset)
                 .limit(limit)
@@ -81,6 +97,7 @@ class RatingRepository(BaseRepository):
                 grouped_achievements = {}
 
                 for student_achievement in student.student_achievements:
+                    print(f"{student_achievement=}")
                     achievement_type = student_achievement.criterias.achievement_type
                     type_name = achievement_type.name
 
