@@ -172,11 +172,9 @@ class StudentRepository(BaseRepository):
                     "student_achievements",
                     "university",
                     "citizenship",
-                    "payment_form",
                     "student_type",
                     "social_category",
                     "accommodation",
-                    "specialty",
                 ]:
                     continue
                 loader = (
