@@ -18,10 +18,7 @@ async def get_contact(student_id_number: str):
     )
 
     if not contact:
-        return JSONResponse(
-            content=[],
-            status_code=status.HTTP_404_NOT_FOUND,
-        )
+        return []
 
     return contact
 

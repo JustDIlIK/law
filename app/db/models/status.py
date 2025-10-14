@@ -7,7 +7,7 @@ from app.db.connection import Base
 class Status(Base):
     __tablename__ = "statuses"
 
-    title: Mapped[str] = mapped_column(String(128))
+    title: Mapped[str] = mapped_column(String(128), unique=True)
 
     student_achievements = relationship("StudentAchievement", back_populates="status")
 

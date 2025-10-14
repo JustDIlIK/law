@@ -20,10 +20,7 @@ async def get_education_history(student_id_number: str):
     )
 
     if not history:
-        return JSONResponse(
-            content=[],
-            status_code=status.HTTP_404_NOT_FOUND,
-        )
+        return []
 
     return history
 

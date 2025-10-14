@@ -164,3 +164,17 @@ async def verify_document(verify_data: StudentAchievementVerify):
     )
 
     return student_achievement
+
+
+@router.get("/count")
+async def verify_document():
+
+    status = await StatusRepository.find_by_variable(title="pending")
+
+    student_achievements = await StudentAchievementRepository.find_all_by_variable(
+        status_id=status.id,
+    )
+    if not student_achievements:
+        return []
+
+    return student_achievements.pop("total")
