@@ -720,7 +720,11 @@ async def add_student(students_list: list):
             place = result_match.pop("place").strip().capitalize()
             await StudentEducationHistoryRepository.add_record(
                 student_id_number=student_element["student_id_number"],
-                place=place,
+                title_uz=place,
+                title_ru=place,
+                title_uz_l=place,
+                title_en=place,
+                order=1,
                 **result_match,
             )
 

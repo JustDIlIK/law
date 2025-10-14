@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.dependencies.permissions import PermissionChecker
 from app.api.schemas.achievement_type import (
     AchievementTypeSchema,
     AchievementTypeUpdateSchema,
@@ -15,6 +16,7 @@ async def list_achievement_types(
     education_type: str,
     page: int = 1,
     limit: int = 50,
+    current_user=Depends(PermissionChecker(["get_achievements_types"])),
 ):
     achievements = await AchievementTypeRepository.get_all(
         page,
@@ -25,7 +27,10 @@ async def list_achievement_types(
 
 
 @router.post("")
-async def create_achievement_type(achievement_data: AchievementTypeSchema):
+async def create_achievement_type(
+    achievement_data: AchievementTypeSchema,
+    current_user=Depends(PermissionChecker(["add_achievements_types"])),
+):
 
     criterias = achievement_data.criterias
 
@@ -48,7 +53,10 @@ async def create_achievement_type(achievement_data: AchievementTypeSchema):
 
 
 @router.delete("/{record_id}")
-async def delete_achievement_type(record_id: int):
+async def delete_achievement_type(
+    record_id: int,
+    current_user=Depends(PermissionChecker(["delete_achievements_types"])),
+):
     deleted_achievement = await AchievementTypeRepository.remove_by_id(
         record_id=record_id
     )
@@ -59,7 +67,11 @@ async def delete_achievement_type(record_id: int):
 
 
 @router.patch("/{record_id}")
-async def patch_achievement_type(record_id: int, data: AchievementTypeUpdateSchema):
+async def patch_achievement_type(
+    record_id: int,
+    data: AchievementTypeUpdateSchema,
+    current_user=Depends(PermissionChecker(["patch_achievements_types"])),
+):
 
     criterias = data.criterias
     del_criterias = data.deleted_criterias

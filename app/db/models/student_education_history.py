@@ -17,5 +17,8 @@ class StudentEducationHistory(Base):
     ended_year: Mapped[str] = mapped_column(
         nullable=True,
     )
-
-    place: Mapped[str]
+    order: Mapped[int]
+    title_uz: Mapped[str]
+    title_ru: Mapped[str]
+    title_uz_l: Mapped[str]
+    title_en: Mapped[str]
