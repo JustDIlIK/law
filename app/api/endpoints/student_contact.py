@@ -13,7 +13,7 @@ router = APIRouter(prefix="/contacts", tags=["Студенты"])
 
 @router.get("/{student_id_number}")
 async def get_contact(student_id_number: str):
-    contact = await StudentContactRepository.find_by_variable(
+    contact = await StudentContactRepository.find_all_by_variable(
         student_id_number=student_id_number,
     )
 

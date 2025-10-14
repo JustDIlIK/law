@@ -17,7 +17,6 @@ class StudentContact(Base):
 
     student_id_number: Mapped[str] = mapped_column(
         ForeignKey("students.student_id_number"),
-        unique=True,
     )
     owner: Mapped[OwnerEnum]
     phone: Mapped[str] = mapped_column(

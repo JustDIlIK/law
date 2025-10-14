@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
 
-from app.api.dependencies.permissions import check_permission
 from app.db.repository.semester import SemesterRepository
 
 router = APIRouter(
