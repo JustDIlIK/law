@@ -10,7 +10,7 @@ router = APIRouter(prefix="/criteria", tags=["Критерии достижен�
 @router.get("/{achievement_type_id}")
 async def list_criteria(
     achievement_type_id: int,
-    current_user=Depends(PermissionChecker(["get_achievements_criteria"])),
+    current_user=Depends(PermissionChecker(["get_achievements_criteria", "all"])),
 ):
 
     result = await AchievementCriteriaRepository.find_by_id(
@@ -22,7 +22,7 @@ async def list_criteria(
 @router.post("")
 async def create_criteria(
     achievement_criteria: AchievementCriteriaSchema,
-    current_user=Depends(PermissionChecker(["add_achievements_criteria"])),
+    current_user=Depends(PermissionChecker(["add_achievements_criteria", "all"])),
 ):
     criteria = await AchievementCriteriaRepository.add_record(
         **achievement_criteria.model_dump()
@@ -33,7 +33,7 @@ async def create_criteria(
 @router.delete("/{criteria_id}")
 async def delete_criteria(
     criteria_id: int,
-    current_user=Depends(PermissionChecker(["delete_achievements_criteria"])),
+    current_user=Depends(PermissionChecker(["delete_achievements_criteria", "all"])),
 ):
     criteria = await AchievementCriteriaRepository.remove_by_id(
         record_id=criteria_id,

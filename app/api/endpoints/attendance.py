@@ -27,7 +27,7 @@ async def get_attendance(
     group_id: int,
     gender: str = "",
     level: str = "",
-    current_user=Depends(PermissionChecker(["get_attendance"])),
+    current_user=Depends(PermissionChecker(["get_attendance", "all"])),
 ):
 
     students = await AttendanceRepository.get_by_group(
@@ -58,7 +58,7 @@ async def add_attendance(
     student_id_number: str,
     semester: str,
     count: int,
-    current_user=Depends(PermissionChecker(["add_attendance"])),
+    current_user=Depends(PermissionChecker(["add_attendance", "all"])),
 ):
 
     check_attendance = await AttendanceRepository.find_by_variable(
@@ -84,7 +84,7 @@ async def add_attendance(
 async def get_attendance(
     id: int,
     count: int,
-    current_user=Depends(PermissionChecker(["patch_attendance"])),
+    current_user=Depends(PermissionChecker(["patch_attendance", "all"])),
 ):
 
     check_attendance = await AttendanceRepository.update_data(

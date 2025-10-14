@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from starlette import status
 from starlette.responses import JSONResponse
 
+from app.api.dependencies.permissions import PermissionChecker
 from app.api.schemas.student_contact import (
     StudentContactSchema,
     StudentContactSchemaPatch,
@@ -12,7 +13,10 @@ router = APIRouter(prefix="/contacts", tags=["Студенты"])
 
 
 @router.get("/{student_id_number}")
-async def get_contact(student_id_number: str):
+async def get_contact(
+    student_id_number: str,
+    current_user=Depends(PermissionChecker(["get_student_contact", "all"])),
+):
     contact = await StudentContactRepository.find_all_by_variable(
         student_id_number=student_id_number,
     )
@@ -24,7 +28,10 @@ async def get_contact(student_id_number: str):
 
 
 @router.post("/add")
-async def add_contact(data: StudentContactSchema):
+async def add_contact(
+    data: StudentContactSchema,
+    current_user=Depends(PermissionChecker(["add_student_contact", "all"])),
+):
 
     result = await StudentContactRepository.add_record(**data.model_dump())
 
@@ -32,7 +39,11 @@ async def add_contact(data: StudentContactSchema):
 
 
 @router.patch("/change/{student_id_number}")
-async def change_contact(student_id_number: str, data: StudentContactSchemaPatch):
+async def change_contact(
+    student_id_number: str,
+    data: StudentContactSchemaPatch,
+    current_user=Depends(PermissionChecker(["patch_student_contact", "all"])),
+):
 
     old = await StudentContactRepository.find_by_variable(
         student_id_number=student_id_number,

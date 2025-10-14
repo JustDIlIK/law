@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from sqladmin import Admin
 from starlette.middleware.cors import CORSMiddleware
 
+from app.api.auth.utils import seed_permissions
 from app.api.endpoints.student import router as student_router
 from app.api.endpoints.employee import router as employee_router
 from app.api.endpoints.auth import router as auth_router
@@ -90,6 +91,7 @@ from app.db.connection import engine
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     start_scheduler()
+    await seed_permissions()
     yield
     stop_scheduler()
 
@@ -177,4 +179,4 @@ app.include_router(psychology_scoring_router)
 
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8001)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000)

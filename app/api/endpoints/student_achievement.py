@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import List
 
-from fastapi import APIRouter, UploadFile, HTTPException, Body, Query
+from fastapi import APIRouter, UploadFile, HTTPException, Body, Query, Depends
 from starlette.responses import JSONResponse
 
+from app.api.dependencies.permissions import PermissionChecker
 from app.api.schemas.student_achievement import StudentAchievementVerify
 from app.api.services.image import save_image
 from app.config.config import settings
@@ -29,6 +30,7 @@ async def get_all_achievements(
     is_verified: bool = None,
     criterias: list[int] = Query(default=[]),
     criterias_achievements: list[int] = Query(default=[]),
+    current_user=Depends(PermissionChecker(["get_all_achievements", "all"])),
 ):
 
     achievements = await StudentAchievementRepository.get_with_achievements(
@@ -57,6 +59,7 @@ async def get_all_achievements(
     level_code: str = "",
     search: str = "",
     gender: str = "",
+    current_user=Depends(PermissionChecker(["get_all_achievements_check", "all"])),
 ):
     achievements = await StudentAchievementRepository.get_with_achievements(
         page,
@@ -82,6 +85,7 @@ async def add_student_achievement(
     level_code: str = Body(),
     student_comment: str = Body(),
     document: UploadFile | None = None,
+    current_user=Depends(PermissionChecker(["add_achievement", "all"])),
 ):
     if document:
         document = await save_image(document, settings.DOCUMENT_URL)
@@ -127,6 +131,7 @@ async def get_student_rating(
     limit: int = 15,
     criterias: list[int] = Query(default=[]),
     criterias_achievements: list[int] = Query(default=[]),
+    current_user=Depends(PermissionChecker(["get_achievement_rating", "all"])),
 ):
     result = await StudentAchievementRepository.student_rating(
         student_id_number=student_id_number,
@@ -142,7 +147,10 @@ async def get_student_rating(
 
 
 @router.put("/verify")
-async def verify_document(verify_data: StudentAchievementVerify):
+async def verify_document(
+    verify_data: StudentAchievementVerify,
+    current_user=Depends(PermissionChecker(["verify_achievement", "all"])),
+):
 
     student_achievement = await StudentAchievementRepository.find_by_id(
         verify_data.application_id
@@ -167,7 +175,9 @@ async def verify_document(verify_data: StudentAchievementVerify):
 
 
 @router.get("/count")
-async def verify_document():
+async def verify_document(
+    current_user=Depends(PermissionChecker(["count_achievement", "all"])),
+):
 
     status = await StatusRepository.find_by_variable(title="pending")
 

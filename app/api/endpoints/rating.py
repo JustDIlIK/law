@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.dependencies.permissions import PermissionChecker
 from app.api.services.check_data import check_achievements
 from app.db.repository.rating import RatingRepository
 
@@ -18,6 +19,7 @@ async def get_rating(
     education_type_code: str = "",
     search: str = "",
     gender: str = "",
+    current_user=Depends(PermissionChecker(["get_rating", "all"])),
 ):
 
     results = await RatingRepository.get_all(
@@ -58,6 +60,7 @@ async def get_rating_by_student(
     education_type_code: str = "",
     search: str = "",
     gender: str = "",
+    current_user=Depends(PermissionChecker(["get_rating_student", "all"])),
 ):
 
     result = await RatingRepository.get_all_by_student(

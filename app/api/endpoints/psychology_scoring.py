@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from starlette import status
 from starlette.responses import JSONResponse
 
+from app.api.dependencies.permissions import PermissionChecker
 from app.api.schemas.psychology_scoring import (
     PsychologyScoringSchemaPatch,
     PsychologyScoringSchema,
@@ -24,6 +25,7 @@ async def get_psychology_scoring(
     search: str = "",
     page: int = 1,
     limit: int = 25,
+    current_user=Depends(PermissionChecker(["get_psychology_scoring", "all"])),
 ):
 
     scoring = await PsychologyScoringRepository.take_all_students(
@@ -94,6 +96,9 @@ async def get_psychology_scoring_by_id(
     education_year_code: str,
     semester_code: str,
     education_type_code: str,
+    current_user=Depends(
+        PermissionChecker(["get_psychology_scoring_by_student", "all"])
+    ),
 ):
 
     score = await PsychologyScoringRepository.take_student(
@@ -109,7 +114,10 @@ async def get_psychology_scoring_by_id(
 
 
 @router.post("/add")
-async def add_psychology_scoring(data: PsychologyScoringSchema):
+async def add_psychology_scoring(
+    data: PsychologyScoringSchema,
+    current_user=Depends(PermissionChecker(["add_psychology_scoring", "all"])),
+):
     psychology_achievement = await PsychologyAchievementRepository.find_by_id(
         data.psychology_achievement_id
     )
@@ -123,7 +131,10 @@ async def add_psychology_scoring(data: PsychologyScoringSchema):
 
 
 @router.delete("/{id}")
-async def delete_psychology_scoring(id: int):
+async def delete_psychology_scoring(
+    id: int,
+    current_user=Depends(PermissionChecker(["delete_psychology_scoring", "all"])),
+):
 
     scoring = await PsychologyScoringRepository.remove_by_id(id)
 
@@ -133,6 +144,7 @@ async def delete_psychology_scoring(id: int):
 @router.patch("/change-scoring")
 async def patch_psychology_scoring(
     data: list[PsychologyScoringSchemaPatch],
+    current_user=Depends(PermissionChecker(["patch_psychology_scoring", "all"])),
 ):
 
     scoring = None

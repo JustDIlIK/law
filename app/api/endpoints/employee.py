@@ -10,7 +10,7 @@ router = APIRouter(prefix="/employees", tags=["Сотрудники"])
 async def get_employees(
     page: int = 1,
     limit: int = 10,
-    current_user=Depends(PermissionChecker(["get_employee"])),
+    current_user=Depends(PermissionChecker(["get_employee", "all"])),
 ):
 
     employees = await EmployeeRepository.get_all(
@@ -23,7 +23,7 @@ async def get_employees(
 @router.get("/{employee_id}")
 async def get_employee(
     employee_id: str,
-    current_user=Depends(PermissionChecker(["get_employee_id"])),
+    current_user=Depends(PermissionChecker(["get_employee_id", "all"])),
 ):
 
     employee = await EmployeeRepository.find_by_variable(employee_id_number=employee_id)
@@ -33,7 +33,7 @@ async def get_employee(
 @router.delete("/{employee_id}")
 async def delete_employee(
     employee_id: str,
-    current_user=Depends(PermissionChecker(["delete_employee"])),
+    current_user=Depends(PermissionChecker(["delete_employee", "all"])),
 ):
     employee = await EmployeeRepository.delete_employee(employee_id)
     return employee

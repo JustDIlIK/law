@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.dependencies.permissions import PermissionChecker
 from app.api.schemas.psychology_achievement import (
     PsychologyAchievementSchema,
     PsychologyAchievementSchemaPatch,
@@ -13,7 +14,9 @@ router = APIRouter(
 
 
 @router.get("")
-async def get_psychology_achievements():
+async def get_psychology_achievements(
+    current_user=Depends(PermissionChecker(["get_psychology_achievement", "all"])),
+):
 
     achievements = await PsychologyAchievementRepository.get_all()
 
@@ -21,7 +24,10 @@ async def get_psychology_achievements():
 
 
 @router.post("")
-async def add_psychology_achievements(data: PsychologyAchievementSchema):
+async def add_psychology_achievements(
+    data: PsychologyAchievementSchema,
+    current_user=Depends(PermissionChecker(["add_psychology_achievement", "all"])),
+):
 
     achievements = await PsychologyAchievementRepository.add_record(**data.model_dump())
 
@@ -29,7 +35,10 @@ async def add_psychology_achievements(data: PsychologyAchievementSchema):
 
 
 @router.delete("/{id}")
-async def delete_psychology_achievement(id: int):
+async def delete_psychology_achievement(
+    id: int,
+    current_user=Depends(PermissionChecker(["delete_psychology_achievement", "all"])),
+):
 
     achievement = await PsychologyAchievementRepository.remove_by_id(id)
 
@@ -40,6 +49,7 @@ async def delete_psychology_achievement(id: int):
 async def patch_psychology_achievement(
     id: int,
     data: PsychologyAchievementSchemaPatch,
+    current_user=Depends(PermissionChecker(["patch_psychology_achievement", "all"])),
 ):
     achievement = await PsychologyAchievementRepository.update_data(
         id,

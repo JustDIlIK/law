@@ -10,7 +10,7 @@ router = APIRouter(
 
 
 @router.get("")
-async def get_genders(current_user=Depends(PermissionChecker(["get_genders"]))):
+async def get_genders():
     genders = await GenderRepository.get_all()
 
     return genders

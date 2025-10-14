@@ -1,9 +1,10 @@
 import asyncio
 from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from starlette.requests import Request
 
+from app.api.dependencies.permissions import PermissionChecker
 from app.api.services.check_data import check_achievements
 from app.db.repository.student import StudentRepository
 
@@ -20,6 +21,7 @@ async def get_students(
     education_type_code: Optional[str] = None,
     gender: Optional[str] = None,
     search: Optional[str] = None,
+    current_user=Depends(PermissionChecker(["get_all_student", "all"])),
 ):
 
     # if education_form:
@@ -54,7 +56,10 @@ async def get_students(
 
 
 @router.get("/{student_id}")
-async def get_student(student_id: str):
+async def get_student(
+    student_id: str,
+    current_user=Depends(PermissionChecker(["get_all_student_by_id", "all"])),
+):
 
     student = await StudentRepository.find_by_variable(student_id_number=student_id)
     return student
@@ -62,7 +67,12 @@ async def get_student(student_id: str):
 
 @router.get("/education-year/{education_year_code}")
 async def get_by_education_year(
-    education_year_code: str, page: int = 1, limit: int = 50
+    education_year_code: str,
+    page: int = 1,
+    limit: int = 50,
+    current_user=Depends(
+        PermissionChecker(["get_all_student_by_education_year", "all"])
+    ),
 ):
 
     students = await StudentRepository.find_all_by_variable(
@@ -75,7 +85,10 @@ async def get_by_education_year(
 
 
 @router.get("/rating/{student_id_number}")
-async def get_student(student_id_number: str):
+async def get_student(
+    student_id_number: str,
+    current_user=Depends(PermissionChecker(["get_all_student_by_rating", "all"])),
+):
 
     student = await StudentRepository.find_by_variable(
         student_id_number=student_id_number
@@ -84,7 +97,10 @@ async def get_student(student_id_number: str):
 
 
 @router.post("/search")
-async def get_by_education_year(full_name: str):
+async def get_by_education_year(
+    full_name: str,
+    current_user=Depends(PermissionChecker(["get_all_student_by_search", "all"])),
+):
     await asyncio.sleep(0.3)
 
     students = await StudentRepository.find_all(full_name=full_name)
@@ -93,6 +109,9 @@ async def get_by_education_year(full_name: str):
 
 
 @router.delete("/{student_id}")
-async def delete_student(student_id: str):
+async def delete_student(
+    student_id: str,
+    current_user=Depends(PermissionChecker(["delete_all_student_by_id", "all"])),
+):
     student = await StudentRepository.delete_student(student_id)
     return student

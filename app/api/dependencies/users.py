@@ -7,20 +7,12 @@ from app.config.config import settings
 from app.db.repository.user import UserRepository
 
 
-# def get_token(request: Request):
-#     token = request.cookies.get("session")
-#     if not token:
-#         print(f"{token=}")
-#         raise HTTPException(status_code=401, detail="Токен отсутствует")
-#     return token.split(" ")[1]
-
-
 def get_token(request: Request):
-    token = request.cookies.get("user")
+    token = request.headers.get("Authorization")
     if not token:
         print(f"{token=}")
         raise HTTPException(status_code=401, detail="Токен отсутствует")
-    return token
+    return token.split(" ")[1]
 
 
 async def get_current_user(token: str = Depends(get_token)):
@@ -42,7 +34,5 @@ async def get_current_user(token: str = Depends(get_token)):
         raise HTTPException(status_code=401, detail="Неверный логин или пароль")
 
     user = await UserRepository.find_by_id(int(user_id))
-
-    print(f"{user=}")
 
     return user
