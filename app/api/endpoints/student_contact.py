@@ -38,6 +38,19 @@ async def add_contact(
     return result
 
 
+@router.delete("/{id}")
+async def delete_contact(
+    id: int,
+    current_user=Depends(PermissionChecker(["delete_student_contact", "all"])),
+):
+
+    result = await StudentContactRepository.remove_by_id(
+        id,
+    )
+
+    return result
+
+
 @router.patch("/change/{student_id_number}")
 async def change_contact(
     student_id_number: str,

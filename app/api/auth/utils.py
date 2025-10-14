@@ -48,6 +48,7 @@ async def seed_permissions():
         "patch_student_contact",
         "add_student_contact",
         "get_student_contact",
+        "delete_student_contact",
         "patch_student_education",
         "delete_student_education",
         "add_student_education",
