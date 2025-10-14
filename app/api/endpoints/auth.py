@@ -4,6 +4,7 @@ from fastapi import APIRouter, UploadFile, Body, Depends
 from starlette.responses import Response, JSONResponse
 
 from app.api.dependencies.images import check_image
+from app.api.dependencies.permissions import PermissionChecker
 from app.api.dependencies.users import get_current_user
 from app.api.schemas.user import SUsersAuthLogin, SUsersGetCurrent
 from app.api.services.auth import (
@@ -35,6 +36,7 @@ async def register_user(
     third_name: str = Body(...),
     gender_code: str = Body(...),
     role_id: int = Body(...),
+    current_user=Depends(PermissionChecker(["user_register"])),
 ):
     existing_user = await UserRepository.find_one_or_none(login=login)
     if existing_user:

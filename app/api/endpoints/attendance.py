@@ -1,9 +1,10 @@
 from datetime import datetime
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from starlette import status
 from starlette.responses import JSONResponse
 
+from app.api.dependencies.permissions import PermissionChecker
 from app.api.services.check_data import check_achievements
 from app.db.repository.achievement_criteria import AchievementCriteriaRepository
 from app.db.repository.achievement_type import AchievementTypeRepository
@@ -26,6 +27,7 @@ async def get_attendance(
     group_id: int,
     gender: str = "",
     level: str = "",
+    current_user=Depends(PermissionChecker(["get_attendance"])),
 ):
 
     students = await AttendanceRepository.get_by_group(
@@ -51,11 +53,12 @@ async def get_attendance(
 
 
 @router.post("/")
-async def get_attendance(
+async def add_attendance(
     education_year: str,
     student_id_number: str,
     semester: str,
     count: int,
+    current_user=Depends(PermissionChecker(["add_attendance"])),
 ):
 
     check_attendance = await AttendanceRepository.find_by_variable(
@@ -81,6 +84,7 @@ async def get_attendance(
 async def get_attendance(
     id: int,
     count: int,
+    current_user=Depends(PermissionChecker(["patch_attendance"])),
 ):
 
     check_attendance = await AttendanceRepository.update_data(

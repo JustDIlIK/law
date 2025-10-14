@@ -20,8 +20,7 @@ role_permissions = Table(
 class Permission(Base):
     __tablename__ = "permissions"
 
-    name: Mapped[str]
-    education_type_code: Mapped[str | None] = mapped_column(nullable=True)
+    name: Mapped[str] = mapped_column(unique=True)
 
     roles = relationship(
         "Role",

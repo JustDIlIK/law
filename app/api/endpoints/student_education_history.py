@@ -22,7 +22,7 @@ async def get_education_history(student_id_number: str):
     if not history:
         return []
 
-    return history
+    return history["data"]
 
 
 @router.post("/add")

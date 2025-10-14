@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, Form, Depends
 from starlette.responses import Response, JSONResponse
 
+from app.api.dependencies.permissions import PermissionChecker
 from app.api.schemas.admin import SAdminAuthLogin
 from app.api.services.auth import (
     get_hashed_password,
@@ -14,7 +15,10 @@ router = APIRouter(prefix=("/admin-auth"), tags=["Админ"])
 
 
 @router.post("/register")
-async def register_user(user_data: SAdminAuthLogin):
+async def register_user(
+    user_data: SAdminAuthLogin,
+    current_user=Depends(PermissionChecker(["admin_register"])),
+):
     existing_user = await AdminRepository.find_one_or_none(email=user_data.email)
     if existing_user:
         return JSONResponse(
