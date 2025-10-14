@@ -172,7 +172,6 @@ class StudentRepository(BaseRepository):
                     "student_achievements",
                     "university",
                     "citizenship",
-                    "education_form",
                     "payment_form",
                     "student_type",
                     "social_category",
