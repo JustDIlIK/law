@@ -20,7 +20,7 @@ async def get_contact(student_id_number: str):
     if not contact:
         return []
 
-    return contact
+    return contact["data"]
 
 
 @router.post("/add")
