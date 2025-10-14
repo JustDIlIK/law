@@ -141,8 +141,8 @@ class StudentRepository(BaseRepository):
     @classmethod
     async def find_students(
         cls,
-        education_year_code: str,
-        semester_code: str,
+        education_year_code: str = "",
+        semester_code: str = "",
         page: int = 1,
         limit: int = 50,
         query: str = "",

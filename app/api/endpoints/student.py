@@ -12,8 +12,8 @@ router = APIRouter(prefix="/students", tags=["Студенты"])
 
 @router.get("")
 async def get_students(
-    education_year_code: str,
-    semester_code: str,
+    education_year_code: Optional[str] = None,
+    semester_code: Optional[str] = None,
     page: int = 1,
     limit: int = 10,
     level_code: Optional[str] = None,
