@@ -6,19 +6,13 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.db.connection import Base
 
 
-class OwnerEnum(Enum):
-    father = "father"
-    mother = "mother"
-    own = "own"
-
-
 class StudentContact(Base):
     __tablename__ = "students_contact"
 
     student_id_number: Mapped[str] = mapped_column(
         ForeignKey("students.student_id_number"),
     )
-    owner: Mapped[OwnerEnum]
+    owner: Mapped[str]
     phone: Mapped[str] = mapped_column(
         default="",
         nullable=True,
