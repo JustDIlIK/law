@@ -22,8 +22,6 @@ class PsychologyScoringRepository(BaseRepository):
     ):
         async with async_session() as session:
             offset = (page - 1) * limit
-
-            # --- Основной запрос ---
             query = (
                 select(Student)
                 .options(
@@ -42,46 +40,28 @@ class PsychologyScoringRepository(BaseRepository):
                         include_aliases=True,
                     ),
                 )
-                .join(
-                    Student.psychology_scorings
-                )  # INNER JOIN — чтобы только с скорингами
-                .filter(
-                    PsychologyScoring.education_year_code == education_year_code,
-                    PsychologyScoring.semester_code == semester_code,
-                    PsychologyScoring.education_type_code == education_type_code,
-                )
-                .distinct(Student.student_id_number)
                 .limit(limit)
                 .offset(offset)
             )
-
             if search:
-                query = query.filter(Student.full_name.ilike(f"%{search.strip()}%"))
-
+                query = query.filter(Student.full_name.ilike(f"%{search}%"))
             result = await session.execute(query)
-            students = result.unique().scalars().all()
-
-            # --- Подсчёт total ---
+            result = result.unique().scalars().all()
             total_query = (
-                select(func.count(func.distinct(Student.student_id_number)))
-                .join(Student.psychology_scorings)
-                .filter(
-                    PsychologyScoring.education_year_code == education_year_code,
-                    PsychologyScoring.semester_code == semester_code,
-                    PsychologyScoring.education_type_code == education_type_code,
+                select(func.count())
+                .select_from(Student)
+                .filter_by(
+                    education_year_code=education_year_code,
+                    semester_code=semester_code,
+                    education_type_code=education_type_code,
                 )
             )
-
             if search:
-                total_query = total_query.filter(
-                    Student.full_name.ilike(f"%{search.strip()}%")
-                )
-
+                total_query = total_query.filter(Student.full_name.ilike(f"%{search}%"))
             total = await session.scalar(total_query)
-
             return {
-                "data": students,
-                "total": total or 0,
+                "data": result,
+                "total": total,
             }
 
     @classmethod
