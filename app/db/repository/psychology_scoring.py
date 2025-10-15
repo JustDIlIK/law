@@ -1,4 +1,4 @@
-from sqlalchemy import select, func, update, and_
+from sqlalchemy import select, func, update, and_, distinct
 from sqlalchemy.orm import joinedload, with_loader_criteria
 
 from app.db.connection import async_session
@@ -47,21 +47,29 @@ class PsychologyScoringRepository(BaseRepository):
                 query = query.filter(Student.full_name.ilike(f"%{search}%"))
             result = await session.execute(query)
             result = result.unique().scalars().all()
-            total_query = (
-                select(func.count())
-                .select_from(Student)
-                .filter_by(
-                    education_year_code=education_year_code,
-                    semester_code=semester_code,
-                    education_type_code=education_type_code,
+
+            total_subquery = (
+                select(distinct(Student.student_id_number))
+                .join(Student.psychology_scorings)
+                .filter(
+                    PsychologyScoring.education_year_code == education_year_code,
+                    PsychologyScoring.semester_code == semester_code,
+                    PsychologyScoring.education_type_code == education_type_code,
                 )
             )
+
             if search:
-                total_query = total_query.filter(Student.full_name.ilike(f"%{search}%"))
+                total_subquery = total_subquery.filter(
+                    Student.full_name.ilike(f"%{search.strip()}%")
+                )
+
+            total_query = select(func.count()).select_from(total_subquery.subquery())
+
             total = await session.scalar(total_query)
+
             return {
                 "data": result,
-                "total": total,
+                "total": total or 0,
             }
 
     @classmethod
