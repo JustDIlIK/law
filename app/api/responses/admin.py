@@ -45,6 +45,8 @@ from app.db.models import (
     Permission,
     StudentContact,
     StudentEducationHistory,
+    PsychologyScoring,
+    PsychologyAchievement,
 )
 from app.db.models.admin import Admin
 
@@ -111,6 +113,16 @@ class EmployeeHistoryView(ModelView, model=EmployeeHistory):
 
 class PsychologistView(ModelView, model=Psychologist):
     column_list = [c.name for c in Psychologist.__table__.c]
+    icon = "fa-solid fa-user-nurse"
+
+
+class PsychologyScoringView(ModelView, model=PsychologyScoring):
+    column_list = [c.name for c in PsychologyScoring.__table__.c]
+    icon = "fa-solid fa-user-nurse"
+
+
+class PsychologyAchievementView(ModelView, model=PsychologyAchievement):
+    column_list = [c.name for c in PsychologyAchievement.__table__.c]
     icon = "fa-solid fa-user-nurse"
 
 
