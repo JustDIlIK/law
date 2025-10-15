@@ -140,7 +140,10 @@ async def add_psychology_scoring(
     )
 
     if psychology_achievement.max_score < data.score:
-        return JSONResponse(content="Слишком высокая оценка")
+        return JSONResponse(
+            content="Слишком высокая оценка",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
 
     scoring = await PsychologyScoringRepository.add_record(**data.model_dump())
 
@@ -175,7 +178,10 @@ async def patch_psychology_scoring(
             score: PsychologyScoring = await PsychologyScoringRepository.find_by_id(id)
             print(f"{score=}")
             if not score:
-                return JSONResponse(content="Нет такой записи")
+                return JSONResponse(
+                    content="Нет такой записи",
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
             max_score_achievement = await PsychologyAchievementRepository.find_by_id(
                 score.psychology_achievement_id
             )
