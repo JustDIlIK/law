@@ -35,6 +35,12 @@ async def get_rating(
         search=search,
         gender=gender,
     )
+    if not results["data"]:
+        results = await StudentRepository.find_all_by_variable(
+            education_year_code=education_year_code,
+            education_type_code=education_type_code,
+            semester_code=semester_code,
+        )
 
     if await check_achievements(
         results["data"],

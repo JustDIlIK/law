@@ -35,7 +35,6 @@ class RatingRepository(BaseRepository):
             offset = (page - 1) * limit
             status = await StatusRepository.find_by_variable(title="succeed")
 
-            # 🔹 Основной запрос
             query = (
                 select(Student)
                 .options(
@@ -63,9 +62,7 @@ class RatingRepository(BaseRepository):
                 )
                 .filter(
                     or_(
-                        # студент имеет GPA за указанный год
                         Student.gpa.any(GPA.education_year_code == education_year_code),
-                        # студент имеет хотя бы одно достижение за указанный год
                         Student.student_achievements.any(
                             and_(
                                 StudentAchievement.is_verified.is_(True),
