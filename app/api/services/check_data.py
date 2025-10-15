@@ -12,12 +12,17 @@ async def check_achievements(
     students: list,
     education_year_code: str,
     semester_code: str,
+    education_type_code: str,
     group_id: int = None,
 ):
     is_updated = False
 
-    behavior = await AchievementTypeRepository.find_by_variable(name="Behavior")
-    attendance = await AchievementTypeRepository.find_by_variable(name="Attendance")
+    behavior = await AchievementTypeRepository.find_by_variable(
+        name="Behavior", type=education_type_code
+    )
+    attendance = await AchievementTypeRepository.find_by_variable(
+        name="Attendance", type=education_type_code
+    )
     status = await StatusRepository.find_by_variable(title="succeed")
 
     if not (behavior and attendance and status):

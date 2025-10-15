@@ -34,12 +34,10 @@ async def get_attendance(
         study_year=education_year,
         group_id=group_id,
     )
-    print(f"{students=}")
+    if not students:
+        return students
     is_updated = await check_achievements(
-        students["data"],
-        education_year,
-        semester,
-        group_id,
+        students["data"], education_year, semester, students[0].education_type_code
     )
     students = await AttendanceRepository.get_by_group(
         education_year=education_year,

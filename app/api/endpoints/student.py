@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends
 from starlette.requests import Request
 
 from app.api.dependencies.permissions import PermissionChecker
-from app.api.services.check_data import check_achievements
 from app.db.repository.student import StudentRepository
 
 router = APIRouter(prefix="/students", tags=["Студенты"])
