@@ -53,6 +53,52 @@ async def get_rating(
     return results
 
 
+@router.get("/own")
+async def get_rating_by_student(
+    education_year_code: str = "",
+    semester_code: str = "",
+    education_type_code: str = "",
+    search: str = "",
+    gender: str = "",
+    current_user=Depends(PermissionChecker(["get_rating_student", "all"])),
+):
+    print(f"{current_user.role.name=}")
+
+    if current_user.role.name != "student":
+        return None
+
+    st = await StudentRepository.find_by_id(
+        record_id=current_user.id,
+    )
+    if not education_year_code:
+        education_year_code = st.education_year_code
+    if not semester_code:
+        semester_code = st.semester_code
+
+    result = await RatingRepository.get_all_by_student(
+        student_id_number=st.student_id_number,
+        education_year_code=education_year_code,
+        education_type_code=education_type_code,
+        semester_code=semester_code,
+        search=search,
+        gender=gender,
+    )
+
+    is_updated = await check_achievements([result], education_year_code)
+
+    if is_updated:
+        result = await RatingRepository.get_all_by_student(
+            student_id_number=st.student_id_number,
+            education_year_code=education_year_code,
+            education_type_code=education_type_code,
+            semester_code=semester_code,
+            search=search,
+            gender=gender,
+        )
+
+    return result
+
+
 @router.get("/{student_id_number}")
 async def get_rating_by_student(
     student_id_number: str,
@@ -66,11 +112,11 @@ async def get_rating_by_student(
     st = await StudentRepository.find_by_variable(
         student_id_number=student_id_number,
     )
-
-    if not education_year_code:
-        education_year_code = st.education_year_code
-    if not semester_code:
-        semester_code = st.semester_code
+    if st:
+        if not education_year_code:
+            education_year_code = st.education_year_code
+        if not semester_code:
+            semester_code = st.semester_code
 
     result = await RatingRepository.get_all_by_student(
         student_id_number=student_id_number,
@@ -86,40 +132,6 @@ async def get_rating_by_student(
     if is_updated:
         result = await RatingRepository.get_all_by_student(
             student_id_number=student_id_number,
-            education_year_code=education_year_code,
-            education_type_code=education_type_code,
-            semester_code=semester_code,
-            search=search,
-            gender=gender,
-        )
-
-    return result
-
-
-@router.get("/own")
-async def get_rating_by_student(
-    education_year_code: str = "",
-    semester_code: str = "",
-    education_type_code: str = "",
-    search: str = "",
-    gender: str = "",
-    current_user=Depends(PermissionChecker(["get_rating_student", "all"])),
-):
-    print(f"{current_user=}")
-    result = await RatingRepository.get_all_by_student(
-        # student_id_number=student_id_number,
-        education_year_code=education_year_code,
-        education_type_code=education_type_code,
-        semester_code=semester_code,
-        search=search,
-        gender=gender,
-    )
-
-    is_updated = await check_achievements([result], education_year_code)
-
-    if is_updated:
-        result = await RatingRepository.get_all_by_student(
-            # student_id_number=student_id_number,
             education_year_code=education_year_code,
             education_type_code=education_type_code,
             semester_code=semester_code,

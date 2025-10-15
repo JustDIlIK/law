@@ -22,6 +22,7 @@ from app.api.endpoints.semester import router as semester_type_router
 from app.api.endpoints.subject import router as subject_router
 from app.api.endpoints.rating import router as rating_router
 from app.api.endpoints.group import router as group_router
+from app.api.endpoints.role import router as role_router
 from app.api.endpoints.attendance import router as attendance_router
 from app.api.endpoints.student_contact import router as student_contact_router
 from app.api.endpoints.student_education_history import (
@@ -176,6 +177,7 @@ app.include_router(psychology_achievement_router)
 app.include_router(student_contact_router)
 app.include_router(student_education_history_router)
 app.include_router(psychology_scoring_router)
+app.include_router(role_router)
 
 
 if __name__ == "__main__":
