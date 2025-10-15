@@ -44,14 +44,22 @@ async def get_psychology_scoring(
             scores = await PsychologyAchievementRepository.get_all()
             for psycho_score in scores["data"]:
                 print(psycho_score)
-                await PsychologyScoringRepository.add_record(
+                existing = await PsychologyScoringRepository.find_by_variable(
                     psychology_achievement_id=psycho_score.id,
-                    score=0,
                     student_id_number=score.student_id_number,
                     education_year_code=education_year_code,
                     semester_code=semester_code,
-                    education_type_code=education_type_code,
                 )
+
+                if not existing:
+                    await PsychologyScoringRepository.add_record(
+                        psychology_achievement_id=psycho_score.id,
+                        score=0,
+                        student_id_number=score.student_id_number,
+                        education_year_code=education_year_code,
+                        semester_code=semester_code,
+                        education_type_code=education_type_code,
+                    )
             scoring = await PsychologyScoringRepository.take_all_students(
                 page=page,
                 limit=limit,
