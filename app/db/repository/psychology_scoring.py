@@ -112,13 +112,8 @@ class PsychologyScoringRepository(BaseRepository):
     async def update_data(cls, id: int, **data):
         async with async_session() as session:
             print(f"{data=}")
-            data["psychology_achievement_id"] = data.pop("psychology_scoring_id", None)
-            score = data.pop("score")
             query = (
-                update(cls.model)
-                .filter_by(**data)
-                .values(score=score)
-                .returning(cls.model)
+                update(cls.model).filter_by(id=id).values(**data).returning(cls.model)
             )
             result = await session.execute(query)
             await session.commit()

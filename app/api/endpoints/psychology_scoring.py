@@ -8,7 +8,7 @@ from app.api.schemas.psychology_scoring import (
     PsychologyScoringSchema,
     PsychologyScoringSchemaGet,
 )
-from app.db.models import Student
+from app.db.models import Student, PsychologyScoring
 from app.db.repository.psychology_achievement import PsychologyAchievementRepository
 from app.db.repository.psychology_scoring import PsychologyScoringRepository
 from app.db.repository.student import StudentRepository
@@ -116,7 +116,7 @@ async def get_psychology_scoring_by_id(
         )
         education_year_code = student.education_year_code
         semester_code = student.semester_code
-        education_type_code = student.education_type_codeв
+        education_type_code = student.education_type_code
 
     score = await PsychologyScoringRepository.take_student(
         student_id_number=student_id_number,
@@ -166,22 +166,28 @@ async def patch_psychology_scoring(
 
     scoring = None
     for d in data:
+        print(f"{data=}")
         id = d.psychology_scoring_id
         print(f"{d=}")
+        print(f"{d.score=}")
 
         if d.score:
-            score = await PsychologyAchievementRepository.find_by_id(id)
+            score: PsychologyScoring = await PsychologyScoringRepository.find_by_id(id)
             print(f"{score=}")
             if not score:
                 return JSONResponse(content="Нет такой записи")
+            max_score_achievement = await PsychologyAchievementRepository.find_by_id(
+                score.psychology_achievement_id
+            )
 
-            if score.max_score < d.score:
+            if max_score_achievement.max_score < d.score:
                 return JSONResponse(
                     content="Слишком высокая оценка",
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
-        scoring = await PsychologyScoringRepository.update_data(
-            id,
-            **d.model_dump(exclude_none=True),
-        )
+            print(f"{id=}")
+            print(f"{d.score=}")
+            scoring = await PsychologyScoringRepository.update_data(id, score=d.score)
+            print(f"{scoring=}")
+
     return scoring
