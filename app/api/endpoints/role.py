@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Body
 
+from app.api.schemas.role import RoleSchema
 from app.db.repository.role import RoleRepository
 
 router = APIRouter(prefix="/roles", tags=["Роли"])
@@ -16,10 +17,10 @@ async def get_roles():
 
 @router.post("")
 async def add_role(
-    name: str = Body(...),
+    data: RoleSchema,
 ):
     role = await RoleRepository.add_record(
-        name=name,
+        name=data.name,
     )
 
     return role
@@ -28,11 +29,11 @@ async def add_role(
 @router.patch("/{id}")
 async def patch_role(
     id: int,
-    name: str = Body(...),
+    data: RoleSchema,
 ):
     changed_role = await RoleRepository.update_data(
         id=id,
-        name=name,
+        name=data.name,
     )
 
     return changed_role

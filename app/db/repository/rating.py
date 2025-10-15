@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import select, inspect, func, or_, and_, exists
 from sqlalchemy.orm import (
     ONETOMANY,
@@ -9,8 +11,10 @@ from sqlalchemy.orm import (
 
 from app.db.connection import async_session
 from app.db.models import Student, StudentAchievement, AchievementCriteria, GPA
+from app.db.repository.achievement_type import AchievementTypeRepository
 from app.db.repository.base import BaseRepository
 from app.db.repository.status import StatusRepository
+from app.db.repository.student_achievement import StudentAchievementRepository
 
 
 class RatingRepository(BaseRepository):
@@ -30,9 +34,6 @@ class RatingRepository(BaseRepository):
         async with async_session() as session:
             offset = (page - 1) * limit
             status = await StatusRepository.find_by_variable(title="succeed")
-            print(f"{education_year_code=}")
-            print(f"{education_type_code=}")
-            # print(f"{semester_code=}")
             query = (
                 select(Student)
                 .options(
@@ -162,9 +163,9 @@ class RatingRepository(BaseRepository):
                 .filter_by(student_id_number=student_id_number)
                 .options(
                     selectinload(Student.student_achievements)
-                    .selectinload(Student.attendance_records)
                     .selectinload(StudentAchievement.criterias)
                     .selectinload(AchievementCriteria.achievement_type),
+                    selectinload(Student.attendance_records),
                     selectinload(Student.gpa),
                 )
                 .order_by(Student.education_year_code)
@@ -225,42 +226,99 @@ class RatingRepository(BaseRepository):
             student_achievements_storage = {}
             total_sum = 0
 
+            grouped_achievements = {}
+            not_empty_achievement_index = []
             for student_achievement in student.student_achievements:
+                print(f"{student_achievement=}")
                 achievement_type = student_achievement.criterias.achievement_type
-                if achievement_type.name not in student_achievements_storage:
-                    student_achievements_storage[achievement_type.name] = {
-                        "data": [],
-                        "total": 0,
-                    }
-
-                student_achievements_storage[achievement_type.name]["data"].append(
-                    {
-                        "value": student_achievement.value,
-                        "id": student_achievement.id,
+                type_name = achievement_type.name
+                not_empty_achievement_index.append(
+                    student_achievement.criterias.achievement_type_id
+                )
+                if type_name not in grouped_achievements:
+                    grouped_achievements[type_name] = {
+                        "achievement_name": type_name,
                         "achievement_id": student_achievement.criterias.achievement_type_id,
-                        "achievement_name": achievement_type.name,
+                        "max_score": student_achievement.criterias.achievement_type.max_score,
+                        "created_at": student_achievement.created_at,
+                        "value": 0,
+                        "id": student_achievement.id,
                     }
-                )
 
-                total_value = (
-                    student_achievements_storage[achievement_type.name]["total"]
-                    + student_achievement.value
-                )
-                student_achievements_storage[achievement_type.name]["total"] = min(
-                    total_value, achievement_type.max_score
-                )
+                grouped_achievements[type_name]["value"] += student_achievement.value
+
+                if (
+                    grouped_achievements[type_name]["value"]
+                    > achievement_type.max_score
+                ):
+                    grouped_achievements[type_name][
+                        "value"
+                    ] = achievement_type.max_score
+
+            achievement_types = await AchievementTypeRepository.find_all_by_variable(
+                type=student.education_type_code,
+            )
+
+            for achievement_type in achievement_types["data"]:
+                if (
+                    achievement_type.id not in not_empty_achievement_index
+                    and achievement_type.name != "Average score in subjects"
+                ):
+                    print(f"{achievement_type.name=}")
+
+                    criteria_id = None
+                    for achievement_type_criteria in achievement_type.criterias:
+                        if achievement_type_criteria.score == 0:
+                            criteria_id = achievement_type_criteria.id
+                            break
+                    if criteria_id:
+
+                        grouped_achievements[achievement_type.name] = {
+                            "achievement_name": achievement_type.name,
+                            "achievement_id": achievement_type.id,
+                            "max_score": achievement_type.max_score,
+                            "created_at": datetime.now(),
+                            "value": 0,
+                            "id": 1,
+                        }
+
+            is_has = False
+            achievement_gpa = await AchievementTypeRepository.find_by_variable(
+                name="Average score in subjects",
+            )
 
             for gpa in student.gpa:
                 if (
                     not education_year_code
                     or gpa.education_year_code == education_year_code
                 ):
+
+                    grouped_achievements["Average score in subjects"] = {
+                        "achievement_name": achievement_gpa.name,
+                        "achievement_id": achievement_gpa.id,
+                        "max_score": achievement_gpa.max_score,
+                        "created_at": datetime.now(),
+                        "value": gpa.value,
+                        "id": gpa.id,
+                    }
+                    is_has = True
+
                     total_sum += gpa.value
 
-            for v in student_achievements_storage.values():
-                total_sum += v["total"]
+            if not is_has:
+                grouped_achievements["Average score in subjects"] = {
+                    "achievement_name": achievement_gpa.name,
+                    "achievement_id": achievement_gpa.id,
+                    "max_score": achievement_gpa.max_score,
+                    "created_at": datetime.now(),
+                    "value": 0,
+                    "id": 1,
+                }
+            achievements_list = list(grouped_achievements.values())
+            for ach in achievements_list:
+                total_sum += ach["value"]
 
-            setattr(student, "achievements_summary", student_achievements_storage)
+            setattr(student, "achievements_summary", achievements_list)
             setattr(student, "total_sum", total_sum)
 
             return student

@@ -7,6 +7,7 @@ from app.db.models import (
     Student,
     AchievementCriteria,
     AchievementType,
+    Status,
 )
 from app.db.repository.base import BaseRepository
 from app.db.repository.gpa import GPARepository
@@ -33,10 +34,11 @@ class StudentAchievementRepository(BaseRepository):
     ):
         async with async_session() as session:
             offset = (page - 1) * limit
-
+            print(f"{status=}")
             query = (
                 select(cls.model)
                 .join(cls.model.criterias)
+                .join(cls.model.status)
                 .options(joinedload(cls.model.student))
                 .options(joinedload(cls.model.status))
                 .options(
@@ -69,6 +71,8 @@ class StudentAchievementRepository(BaseRepository):
                         AchievementCriteria.id.in_(criterias_achievements)
                     )
                 )
+            if status:
+                filters.append(Status.title == status)
             if filters:
                 query = query.filter(*filters)
 
@@ -111,11 +115,14 @@ class StudentAchievementRepository(BaseRepository):
                     )
                 )
                 .options(joinedload(cls.model.status))
-                .offset(offset)
-                .limit(limit)
                 .order_by(cls.model.added_at.desc())
+                .limit(limit)
+                .offset(offset)
             )
+
             filters = []
+
+            # 🔹 фильтры
             if achievement_criteria_id:
                 filters.append(
                     StudentAchievement.achievement_criteria_id
@@ -130,15 +137,55 @@ class StudentAchievementRepository(BaseRepository):
                     )
                 )
             if status:
+                status_obj = await StatusRepository.find_by_variable(title=status)
+                if status_obj:
+                    filters.append(StudentAchievement.status_id == status_obj.id)
 
-                status_id = await StatusRepository.find_by_variable(title=status)
+            if filters:
+                query = query.filter(*filters)
 
-                filters.append(StudentAchievement.status_id == status_id.id)
-
-            query = query.filter(*filters)
             result = await session.execute(query)
-            student = result.unique().scalars().all()
-            if not student:
-                return []
+            data = result.unique().scalars().all()
 
-            return student
+            total_query = (
+                select(func.count(func.distinct(cls.model.id)))
+                .select_from(cls.model)
+                .join(cls.model.criterias)
+                .filter(cls.model.student_id_number == student_id_number)
+            )
+
+            if filters:
+                total_query = total_query.filter(*filters)
+
+            total = await session.scalar(total_query)
+
+            return {
+                "data": data,
+                "total": total,
+            }
+
+    @classmethod
+    async def find_all_by_student_id(
+        cls, page=1, limit=50, student_id_number: str = ""
+    ):
+        async with async_session() as session:
+            offset = (page - 1) * limit
+            query = (
+                select(cls.model)
+                .limit(limit)
+                .offset(offset)
+                .filter_by(student_id_number=student_id_number)
+            )
+            result = await session.execute(query)
+            result = result.scalars().all()
+            total_query = (
+                select(func.count())
+                .select_from(cls.model)
+                .filter_by(student_id_number=student_id_number)
+            )
+            total = await session.scalar(total_query)
+
+            return {
+                "data": result,
+                "total": total,
+            }

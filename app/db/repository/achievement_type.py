@@ -60,3 +60,25 @@ class AchievementTypeRepository(BaseRepository):
                 "data": result,
                 "total": total,
             }
+
+    @classmethod
+    async def find_all_by_variable(cls, page=1, limit=50, **data):
+        async with async_session() as session:
+            offset = (page - 1) * limit
+            query = (
+                select(cls.model)
+                .options(selectinload(cls.model.criterias))
+                .limit(limit)
+                .offset(offset)
+                .filter_by(**data)
+            )
+            result = await session.execute(query)
+            result = result.scalars().all()
+
+            total_query = select(func.count()).select_from(cls.model).filter_by(**data)
+            total = await session.scalar(total_query)
+
+            return {
+                "data": result,
+                "total": total,
+            }

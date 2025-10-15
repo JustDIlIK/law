@@ -127,7 +127,7 @@ async def get_rating_by_student(
         gender=gender,
     )
 
-    is_updated = await check_achievements([result], education_year_code)
+    is_updated = await check_achievements([result], education_year_code, semester_code)
 
     if is_updated:
         result = await RatingRepository.get_all_by_student(

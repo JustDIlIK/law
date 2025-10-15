@@ -8,8 +8,10 @@ from app.api.schemas.psychology_scoring import (
     PsychologyScoringSchema,
     PsychologyScoringSchemaGet,
 )
+from app.db.models import Student
 from app.db.repository.psychology_achievement import PsychologyAchievementRepository
 from app.db.repository.psychology_scoring import PsychologyScoringRepository
+from app.db.repository.student import StudentRepository
 
 router = APIRouter(
     prefix="/psychology-scoring",
@@ -93,13 +95,20 @@ async def get_psychology_scoring(
 @router.get("/student/{student_id_number}")
 async def get_psychology_scoring_by_id(
     student_id_number: str,
-    education_year_code: str,
-    semester_code: str,
-    education_type_code: str,
+    education_year_code: str = "",
+    semester_code: str = "",
+    education_type_code: str = "",
     current_user=Depends(
         PermissionChecker(["get_psychology_scoring_by_student", "all"])
     ),
 ):
+    if not education_type_code or semester_code:
+        student: Student = await StudentRepository.find_by_variable(
+            student_id_number=student_id_number,
+        )
+        education_year_code = student.education_year_code
+        semester_code = student.semester_code
+        education_type_code = student.education_type_codeв
 
     score = await PsychologyScoringRepository.take_student(
         student_id_number=student_id_number,

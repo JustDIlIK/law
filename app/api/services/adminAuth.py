@@ -34,13 +34,14 @@ class AdminAuth(AuthenticationBackend):
 
     async def authenticate(self, request: Request) -> bool:
         token = request.session.get("session")
-
         if not token:
             return False
         user = await get_current_user(token)
         return True
+
         if not user:
             return False
+
         return True
 
 

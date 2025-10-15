@@ -6,6 +6,7 @@ import uvicorn
 from fastapi import FastAPI
 from sqladmin import Admin
 from starlette.middleware.cors import CORSMiddleware
+from starlette.staticfiles import StaticFiles
 
 from app.api.auth.utils import seed_permissions
 from app.api.endpoints.student import router as student_router
@@ -39,35 +40,9 @@ from app.api.endpoints.admin import router as admin_router
 
 from app.api.responses.admin import (
     AdminView,
-    GenderView,
-    CountryView,
-    CitizenshipView,
-    EducationFormView,
-    EducationTypeView,
-    EducationSemesterView,
-    PaymentFormView,
-    StudentTypeView,
-    SocialCategoryView,
-    AccommodationView,
-    StructureTypeView,
-    LocalityTypeView,
-    EducationLanguageView,
     GPAView,
     LevelView,
-    AcademicDegreeView,
-    AcademicRankView,
-    EmploymentFormView,
-    StaffPositionView,
-    EmploymentStaffView,
-    EmployeeStatusView,
-    EmployeeTypeView,
-    LocationView,
-    UniversityView,
-    DepartmentView,
-    SpecialtyView,
     GroupView,
-    SemesterView,
-    EducationYearView,
     RoleView,
     UserView,
     StudentView,
@@ -77,8 +52,6 @@ from app.api.responses.admin import (
     AchievementTypeView,
     AchievementCriteriaView,
     StudentAchievementView,
-    StudentSubjectView,
-    PermissionView,
     StudentContactView,
     StudentEducationHistoryView,
 )
@@ -98,41 +71,20 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 admin = Admin(
-    app, engine, authentication_backend=authentication_backend, base_url="/admin/"
+    app,
+    engine,
+    authentication_backend=authentication_backend,
+    base_url="/admin/",
+    logo_url="/uploads/source/logo.png",
+    favicon_url="/uploads/source/logo.ico",
 )
 
 admin.add_model_view(AdminView)
-admin.add_model_view(GenderView)
-admin.add_model_view(CountryView)
-admin.add_model_view(CitizenshipView)
-admin.add_model_view(EducationFormView)
-admin.add_model_view(EducationTypeView)
-admin.add_model_view(EducationSemesterView)
-admin.add_model_view(PaymentFormView)
-admin.add_model_view(StudentTypeView)
-admin.add_model_view(SocialCategoryView)
-admin.add_model_view(AccommodationView)
-admin.add_model_view(StructureTypeView)
-admin.add_model_view(LocalityTypeView)
-admin.add_model_view(EducationLanguageView)
 admin.add_model_view(GPAView)
 admin.add_model_view(LevelView)
-admin.add_model_view(AcademicDegreeView)
-admin.add_model_view(AcademicRankView)
-admin.add_model_view(EmploymentFormView)
-admin.add_model_view(EmploymentStaffView)
-admin.add_model_view(StaffPositionView)
-admin.add_model_view(EmployeeStatusView)
-admin.add_model_view(EmployeeTypeView)
-admin.add_model_view(LocationView)
-admin.add_model_view(UniversityView)
-admin.add_model_view(DepartmentView)
-admin.add_model_view(SpecialtyView)
 admin.add_model_view(GroupView)
-admin.add_model_view(SemesterView)
-admin.add_model_view(EducationYearView)
 admin.add_model_view(RoleView)
 admin.add_model_view(UserView)
 admin.add_model_view(StudentView)
@@ -142,8 +94,6 @@ admin.add_model_view(PsychologistView)
 admin.add_model_view(AchievementTypeView)
 admin.add_model_view(AchievementCriteriaView)
 admin.add_model_view(StudentAchievementView)
-admin.add_model_view(StudentSubjectView)
-admin.add_model_view(PermissionView)
 admin.add_model_view(StudentContactView)
 admin.add_model_view(StudentEducationHistoryView)
 
