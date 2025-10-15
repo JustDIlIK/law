@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, List
 
 from pydantic import BaseModel
@@ -30,3 +31,35 @@ class AchievementTypeUpdateSchema(BaseModel):
     max_score: Optional[int] = None
     criterias: Optional[List[AchievementCriteriaUpdateSchema]] = None
     deleted_criterias: Optional[List[int]] = None
+
+
+class AchievementSummarySchema(BaseModel):
+    achievement_name: str
+    achievement_id: int
+    max_score: float
+    value: float
+    id: int
+    created_at: datetime
+
+
+class AttendanceSchema(BaseModel):
+    education_year_code: str
+    semester_code: str
+    total_absences: int
+
+
+class StudentRatingResponse(BaseModel):
+    student_id_number: str
+    full_name: str
+    short_name: Optional[str]
+    image_url: Optional[str]
+    education_year_code: str
+    semester_code: str
+    year_of_enter: int
+    is_active: bool
+    total_sum: float
+    achievements_summary: List[AchievementSummarySchema]
+    attendance_records: List[AttendanceSchema]
+
+    class Config:
+        orm_mode = True

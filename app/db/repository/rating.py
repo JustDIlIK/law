@@ -166,159 +166,105 @@ class RatingRepository(BaseRepository):
                     selectinload(Student.student_achievements)
                     .selectinload(StudentAchievement.criterias)
                     .selectinload(AchievementCriteria.achievement_type),
-                    selectinload(Student.attendance_records),
                     selectinload(Student.gpa),
+                    selectinload(Student.attendance_records),
+                    with_loader_criteria(
+                        StudentAchievement,
+                        and_(
+                            StudentAchievement.is_verified.is_(True),
+                            StudentAchievement.status_id == status.id,
+                            StudentAchievement.education_year_code
+                            == education_year_code,
+                            StudentAchievement.education_semester == semester_code,
+                        ),
+                        include_aliases=True,
+                    ),
                 )
-                .order_by(Student.education_year_code)
             )
 
-            achievement_filters = [
-                StudentAchievement.is_verified.is_(True),
-                StudentAchievement.status_id == status.id,
-            ]
-            if education_year_code:
-                achievement_filters.append(
-                    StudentAchievement.education_year_code == education_year_code
-                )
-            if education_type_code:
-                achievement_filters.append(
-                    StudentAchievement.education_type_code == education_type_code
-                )
-            if semester_code:
-                achievement_filters.append(
-                    StudentAchievement.education_semester == semester_code
-                )
-
-            gpa_filters = []
-            if education_year_code:
-                gpa_filters.append(GPA.education_year_code == education_year_code)
-            if education_type_code:
-                gpa_filters.append(GPA.education_type_code == education_type_code)
-
-            loader_options = [
-                with_loader_criteria(
-                    StudentAchievement,
-                    and_(*achievement_filters),
-                    include_aliases=True,
-                )
-            ]
-            if gpa_filters:
-                loader_options.append(
-                    with_loader_criteria(GPA, and_(*gpa_filters), include_aliases=True)
-                )
-
-            query = query.options(*loader_options)
-
-            conditions = []
+            conds = []
             if gender:
-                conditions.append(Student.gender_code == gender)
+                conds.append(Student.gender_code == gender)
             if search:
-                conditions.append(Student.full_name.ilike(f"%{search.strip()}%"))
+                conds.append(Student.full_name.ilike(f"%{search.strip()}%"))
             if education_type_code:
-                conditions.append(Student.education_type_code == education_type_code)
+                conds.append(Student.education_type_code == education_type_code)
+            query = query.filter(*conds)
 
-            query = query.filter(*conditions)
-
-            result = await session.execute(query)
-            student = result.unique().scalar_one_or_none()
+            student = (await session.execute(query)).unique().scalar_one_or_none()
             if not student:
-                return {"data": None}
+                return None
 
-            student_achievements_storage = {}
+            grouped = {}
             total_sum = 0
+            filled_type_ids = set()
 
-            grouped_achievements = {}
-            not_empty_achievement_index = []
-            for student_achievement in student.student_achievements:
-                print(f"{student_achievement=}")
-                achievement_type = student_achievement.criterias.achievement_type
-                type_name = achievement_type.name
-                not_empty_achievement_index.append(
-                    student_achievement.criterias.achievement_type_id
-                )
-                if type_name not in grouped_achievements:
-                    grouped_achievements[type_name] = {
+            for ach in student.student_achievements:
+                a_type = ach.criterias.achievement_type
+                type_id, type_name = a_type.id, a_type.name
+                filled_type_ids.add(type_id)
+
+                grouped.setdefault(
+                    type_name,
+                    {
                         "achievement_name": type_name,
-                        "achievement_id": student_achievement.criterias.achievement_type_id,
-                        "max_score": student_achievement.criterias.achievement_type.max_score,
-                        "created_at": student_achievement.created_at,
+                        "achievement_id": type_id,
+                        "max_score": a_type.max_score,
                         "value": 0,
-                        "id": student_achievement.id,
+                        "id": ach.id,
+                        "created_at": ach.created_at,
+                    },
+                )
+
+                grouped[type_name]["value"] = min(
+                    grouped[type_name]["value"] + ach.value, a_type.max_score
+                )
+
+            all_types = (
+                await AchievementTypeRepository.find_all_by_variable(
+                    type=student.education_type_code
+                )
+            )["data"]
+
+            for a_type in all_types:
+                if (
+                    a_type.id not in filled_type_ids
+                    and a_type.name != "Average score in subjects"
+                ):
+                    grouped[a_type.name] = {
+                        "achievement_name": a_type.name,
+                        "achievement_id": a_type.id,
+                        "max_score": a_type.max_score,
+                        "value": 0,
+                        "id": 1,
+                        "created_at": datetime.now(),
                     }
 
-                grouped_achievements[type_name]["value"] += student_achievement.value
-
-                if (
-                    grouped_achievements[type_name]["value"]
-                    > achievement_type.max_score
-                ):
-                    grouped_achievements[type_name][
-                        "value"
-                    ] = achievement_type.max_score
-
-            achievement_types = await AchievementTypeRepository.find_all_by_variable(
-                type=student.education_type_code,
+            gpa_type = await AchievementTypeRepository.find_by_variable(
+                name="Average score in subjects"
             )
+            gpa_value = 0
 
-            for achievement_type in achievement_types["data"]:
-                if (
-                    achievement_type.id not in not_empty_achievement_index
-                    and achievement_type.name != "Average score in subjects"
-                ):
-                    print(f"{achievement_type.name=}")
-
-                    criteria_id = None
-                    for achievement_type_criteria in achievement_type.criterias:
-                        if achievement_type_criteria.score == 0:
-                            criteria_id = achievement_type_criteria.id
-                            break
-                    if criteria_id:
-                        grouped_achievements[achievement_type.name] = {
-                            "achievement_name": achievement_type.name,
-                            "achievement_id": achievement_type.id,
-                            "max_score": achievement_type.max_score,
-                            "created_at": datetime.now(),
-                            "value": 0,
-                            "id": 1,
-                        }
-
-            is_has = False
-            achievement_gpa = await AchievementTypeRepository.find_by_variable(
-                name="Average score in subjects",
-            )
-
-            for gpa in student.gpa:
+            for g in student.gpa:
                 if (
                     not education_year_code
-                    or gpa.education_year_code == education_year_code
+                    or g.education_year_code == education_year_code
                 ):
+                    gpa_value = g.value
+                    break
 
-                    grouped_achievements["Average score in subjects"] = {
-                        "achievement_name": achievement_gpa.name,
-                        "achievement_id": achievement_gpa.id,
-                        "max_score": achievement_gpa.max_score,
-                        "created_at": datetime.now(),
-                        "value": gpa.value,
-                        "id": gpa.id,
-                    }
-                    is_has = True
+            grouped["Average score in subjects"] = {
+                "achievement_name": gpa_type.name,
+                "achievement_id": gpa_type.id,
+                "max_score": gpa_type.max_score,
+                "value": gpa_value,
+                "id": gpa_value or 1,
+                "created_at": datetime.now(),
+            }
 
-                    total_sum += gpa.value
+            total_sum = sum(v["value"] for v in grouped.values())
 
-            if not is_has:
-                grouped_achievements["Average score in subjects"] = {
-                    "achievement_name": achievement_gpa.name,
-                    "achievement_id": achievement_gpa.id,
-                    "max_score": achievement_gpa.max_score,
-                    "created_at": datetime.now(),
-                    "value": 0,
-                    "id": 1,
-                }
-            achievements_list = list(grouped_achievements.values())
-            for ach in achievements_list:
-                total_sum += ach["value"]
-
-            setattr(student, "achievements_summary", achievements_list)
-            setattr(student, "total_sum", total_sum)
+            student.achievements_summary = list(grouped.values())
+            student.total_sum = total_sum
 
             return student

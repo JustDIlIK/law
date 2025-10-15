@@ -108,7 +108,7 @@ async def get_psychology_scoring_by_id(
         )
         education_year_code = student.education_year_code
         semester_code = student.semester_code
-        education_type_code = student.education_type_code
+        education_type_code = student.education_type_codeв
 
     score = await PsychologyScoringRepository.take_student(
         student_id_number=student_id_number,

@@ -1,8 +1,9 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies.permissions import PermissionChecker
+from app.api.schemas.achievement_type import StudentRatingResponse
 from app.api.schemas.rating import StudentResponse, StudentsResponse
 from app.api.services.check_data import check_achievements
 from app.db.models import Student
@@ -112,7 +113,10 @@ async def get_rating_by_student(
     return result
 
 
-@router.get("/{student_id_number}")
+@router.get(
+    "/{student_id_number}",
+    response_model=StudentRatingResponse,
+)
 async def get_rating_by_student(
     student_id_number: str,
     education_type_code: str,
@@ -122,14 +126,14 @@ async def get_rating_by_student(
     gender: str = "",
     current_user=Depends(PermissionChecker(["get_rating_student", "all"])),
 ):
-    st = await StudentRepository.find_by_variable(
-        student_id_number=student_id_number,
+    student = await StudentRepository.find_by_variable(
+        student_id_number=student_id_number
     )
-    if st:
-        if not education_year_code:
-            education_year_code = st.education_year_code
-        if not semester_code:
-            semester_code = st.semester_code
+    if not student:
+        raise HTTPException(status_code=404, detail="Студент не найден")
+
+    education_year_code = education_year_code or student.education_year_code
+    semester_code = semester_code or student.semester_code
 
     result = await RatingRepository.get_all_by_student(
         student_id_number=student_id_number,
@@ -140,14 +144,9 @@ async def get_rating_by_student(
         gender=gender,
     )
 
-    is_updated = await check_achievements(
-        [result],
-        education_year_code,
-        semester_code,
-        education_type_code,
-    )
-
-    if is_updated:
+    if await check_achievements(
+        [result], education_year_code, semester_code, education_type_code
+    ):
         result = await RatingRepository.get_all_by_student(
             student_id_number=student_id_number,
             education_year_code=education_year_code,

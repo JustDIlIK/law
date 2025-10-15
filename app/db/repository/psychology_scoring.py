@@ -1,5 +1,5 @@
-from sqlalchemy import select, func, update
-from sqlalchemy.orm import joinedload
+from sqlalchemy import select, func, update, and_
+from sqlalchemy.orm import joinedload, with_loader_criteria
 
 from app.db.connection import async_session
 from app.db.models import Student
@@ -18,23 +18,28 @@ class PsychologyScoringRepository(BaseRepository):
         semester_code: str,
         search: str = "",
         page=1,
-        limit=50,
+        limit=25,
     ):
         async with async_session() as session:
 
             offset = (page - 1) * limit
-
             query = (
                 select(Student)
                 .options(
                     joinedload(Student.psychology_scorings).joinedload(
                         PsychologyScoring.psychology_achievement
-                    )
-                )
-                .filter_by(
-                    education_year_code=education_year_code,
-                    semester_code=semester_code,
-                    education_type_code=education_type_code,
+                    ),
+                    with_loader_criteria(
+                        PsychologyScoring,
+                        and_(
+                            PsychologyScoring.education_type_code
+                            == education_type_code,
+                            PsychologyScoring.education_year_code
+                            == education_year_code,
+                            PsychologyScoring.semester_code == semester_code,
+                        ),
+                        include_aliases=True,
+                    ),
                 )
                 .limit(limit)
                 .offset(offset)
