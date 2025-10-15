@@ -36,7 +36,7 @@ async def register_user(
     third_name: str = Body(...),
     gender_code: str = Body(...),
     role_id: int = Body(...),
-    current_user=Depends(PermissionChecker(["user_register", "all"])),
+    # current_user=Depends(PermissionChecker(["user_register", "all"])),
 ):
     existing_user = await UserRepository.find_one_or_none(login=login)
     if existing_user:

@@ -14,90 +14,72 @@ async def check_achievements(
     semester_code: str,
     group_id: int = None,
 ):
-    attendance = await AchievementTypeRepository.find_by_variable(name="Attendance")
-    attendance_scores = await AchievementCriteriaRepository.find_all_by_variable(
-        achievement_type_id=attendance.id
-    )
-    mark = 5
-    change_attendance = None
-    for attendance_score in attendance_scores["data"]:
-        if attendance_score.score == mark:
-            change_attendance = attendance_score
-
     is_updated = False
+
     behavior = await AchievementTypeRepository.find_by_variable(name="Behavior")
     attendance = await AchievementTypeRepository.find_by_variable(name="Attendance")
-    behavior_element = None
-    attendance_element = None
-
-    for behavior_criteria in behavior.criterias:
-        if behavior_criteria.score == 5:
-            behavior_element = behavior_criteria
-
-    for attendance_criteria in attendance.criterias:
-        if attendance_criteria.score == 5:
-            attendance_element = attendance_criteria
-
     status = await StatusRepository.find_by_variable(title="succeed")
 
-    if behavior_element and status and attendance_element:
-        for student in students:
+    if not (behavior and attendance and status):
+        return False
 
-            year_dif = int(student.education_year_code) - student.year_of_enter
-            if (
-                0 <= year_dif < 5
-                and student.student_status_code == "11"
-                and student.year_of_enter <= int(education_year_code)
-            ):
+    behavior_el = next((c for c in behavior.criterias if c.score == 5), None)
+    attendance_el = next((c for c in attendance.criterias if c.score == 5), None)
+    if not (behavior_el and attendance_el):
+        return False
 
-                is_added_attendance = await AttendanceRepository.find_by_variable(
-                    education_year_code=education_year_code,
-                    student_id_number=student.student_id_number,
-                    semester_code=semester_code,
-                )
+    for student in students:
+        year_dif = int(student.education_year_code) - student.year_of_enter
+        if not (0 <= year_dif < 5 and student.student_status_code == "11"):
+            continue
 
-                if not is_added_attendance and group_id:
-                    student_achievement = await StudentAchievementRepository.add_record(
-                        student_id_number=student.student_id_number,
-                        achievement_criteria_id=change_attendance.id,
-                        education_year_code=education_year_code,
-                        education_type_code=student.education_type_code,
-                        education_semester=semester_code,
-                        added_at=datetime.now(),
-                        is_verified=True,
-                        level_code=student.level_code,
-                        status_id=status.id,
-                        value=mark,
-                    )
+        # Attendance
+        is_att = await AttendanceRepository.find_by_variable(
+            education_year_code=education_year_code,
+            student_id_number=student.student_id_number,
+            semester_code=semester_code,
+        )
+        if not is_att:
+            sa = await StudentAchievementRepository.add_record(
+                student_id_number=student.student_id_number,
+                achievement_criteria_id=attendance_el.id,
+                education_year_code=education_year_code,
+                education_type_code=student.education_type_code,
+                education_semester=semester_code,
+                is_verified=True,
+                status_id=status.id,
+                level_code=student.level_code,
+                added_at=datetime.now(),
+                value=5,
+            )
+            await AttendanceRepository.add_record(
+                education_year_code=education_year_code,
+                semester_code=semester_code,
+                student_id_number=student.student_id_number,
+                total_absences=0,
+                student_achievement_id=sa.id,
+            )
 
-                    await AttendanceRepository.add_record(
-                        education_year_code=education_year_code,
-                        semester_code=semester_code,
-                        student_id_number=student.student_id_number,
-                        total_absences=0,
-                        student_achievement_id=student_achievement.id,
-                    )
-
-                is_added = await StudentAchievementRepository.find_by_variable(
-                    achievement_criteria_id=behavior_element.id,
-                    education_year_code=student.education_year_code,
-                    student_id_number=student.student_id_number,
-                    education_semester=semester_code,
-                )
-
-                if not is_added:
-                    await StudentAchievementRepository.add_record(
-                        student_id_number=student.student_id_number,
-                        achievement_criteria_id=behavior_element.id,
-                        is_verified=True,
-                        value=behavior_element.score,
-                        added_at=datetime.now(),
-                        level_code=student.level_code,
-                        education_type_code=student.education_type_code,
-                        education_year_code=education_year_code,
-                        education_semester=semester_code,
-                        status_id=status.id,
-                    )
-                    is_updated = True
+        # Behavior
+        is_behavior = await StudentAchievementRepository.find_by_variable(
+            achievement_criteria_id=behavior_el.id,
+            education_year_code=education_year_code,
+            student_id_number=student.student_id_number,
+            education_semester=semester_code,
+        )
+        if not is_behavior:
+            await StudentAchievementRepository.add_record(
+                student_id_number=student.student_id_number,
+                achievement_criteria_id=behavior_el.id,
+                is_verified=True,
+                value=behavior_el.score,
+                added_at=datetime.now(),
+                level_code=student.level_code,
+                education_type_code=student.education_type_code,
+                education_year_code=education_year_code,
+                education_semester=semester_code,
+                status_id=status.id,
+            )
+            is_updated = True
 
     return is_updated

@@ -14,7 +14,7 @@ def get_token(request: Request):
         print(f"{token=}")
         raise HTTPException(status_code=401, detail="Токен отсутствует")
     return token.split(" ")[1]
-    #
+
     # token = request.cookies.get("user")
     # if not token:
     #     print(f"{token=}")

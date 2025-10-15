@@ -1,6 +1,9 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 
 from app.api.dependencies.permissions import PermissionChecker
+from app.api.schemas.rating import StudentResponse, StudentsResponse
 from app.api.services.check_data import check_achievements
 from app.db.repository.rating import RatingRepository
 from app.db.repository.student import StudentRepository
@@ -11,7 +14,7 @@ router = APIRouter(
 )
 
 
-@router.get("")
+@router.get("", response_model=StudentsResponse)
 async def get_rating(
     education_year_code: str,
     semester_code: str,
@@ -22,7 +25,6 @@ async def get_rating(
     gender: str = "",
     current_user=Depends(PermissionChecker(["get_rating", "all"])),
 ):
-
     results = await RatingRepository.get_all(
         page,
         limit,
@@ -33,13 +35,7 @@ async def get_rating(
         gender=gender,
     )
 
-    is_updated = await check_achievements(
-        students=results["data"],
-        education_year_code=education_year_code,
-        semester_code=semester_code,
-    )
-
-    if is_updated:
+    if await check_achievements(results["data"], education_year_code, semester_code):
         results = await RatingRepository.get_all(
             page,
             limit,

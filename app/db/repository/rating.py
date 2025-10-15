@@ -34,6 +34,8 @@ class RatingRepository(BaseRepository):
         async with async_session() as session:
             offset = (page - 1) * limit
             status = await StatusRepository.find_by_variable(title="succeed")
+
+            # 🔹 Основной запрос
             query = (
                 select(Student)
                 .options(
@@ -68,82 +70,81 @@ class RatingRepository(BaseRepository):
                                 StudentAchievement.status_id == status.id,
                                 StudentAchievement.education_year_code
                                 == education_year_code,
-                                # StudentAchievement.education_semester == semester_code,
                             )
                         ),
                     )
                 )
+                .order_by(Student.education_year_code)
                 .offset(offset)
                 .limit(limit)
-                .order_by(Student.education_year_code)
             )
 
-            conditions = []
+            # 🔹 Общие условия фильтра
+            conds = []
             if gender:
-                conditions.append(Student.gender_code == gender)
+                conds.append(Student.gender_code == gender)
             if search:
-                conditions.append(Student.full_name.ilike(f"%{search.strip()}%"))
+                conds.append(Student.full_name.ilike(f"%{search.strip()}%"))
             if education_type_code:
-                conditions.append(Student.education_type_code == education_type_code)
+                conds.append(Student.education_type_code == education_type_code)
+            if conds:
+                query = query.filter(*conds)
 
-            query = query.filter(*conditions)
-
+            # 🔹 Выполнение
             result = await session.execute(query)
             students = result.unique().scalars().all()
 
-            for student in students:
-                achievements_list = []
+            # 🔹 Постобработка студентов
+            for s in students:
+                grouped = {}
                 total_sum = 0
 
-                grouped_achievements = {}
-
-                for student_achievement in student.student_achievements:
-                    print(f"{student_achievement=}")
-                    achievement_type = student_achievement.criterias.achievement_type
-                    type_name = achievement_type.name
-
-                    if type_name not in grouped_achievements:
-                        grouped_achievements[type_name] = {
-                            "achievement_name": type_name,
-                            "achievement_id": student_achievement.criterias.achievement_type_id,
+                for ach in s.student_achievements:
+                    ach_type = ach.criterias.achievement_type
+                    name = ach_type.name
+                    grouped.setdefault(
+                        name,
+                        {
+                            "achievement_name": name,
+                            "achievement_id": ach.criterias.achievement_type_id,
                             "total": 0,
-                            "id": student_achievement.id,
-                        }
+                            "id": ach.id,
+                        },
+                    )
+                    grouped[name]["total"] = min(
+                        grouped[name]["total"] + ach.value, ach_type.max_score
+                    )
 
-                    grouped_achievements[type_name][
-                        "total"
-                    ] += student_achievement.value
+                s.achievements_summary = list(grouped.values())
+                s.total_sum = sum(v["total"] for v in grouped.values()) + sum(
+                    g.value
+                    for g in s.gpa
+                    if not education_year_code
+                    or g.education_year_code == education_year_code
+                )
 
-                    if (
-                        grouped_achievements[type_name]["total"]
-                        > achievement_type.max_score
-                    ):
-                        grouped_achievements[type_name][
-                            "total"
-                        ] = achievement_type.max_score
-
-                achievements_list = list(grouped_achievements.values())
-
-                for ach in achievements_list:
-                    total_sum += ach["total"]
-
-                for gpa in student.gpa:
-                    if (
-                        not education_year_code
-                        or gpa.education_year_code == education_year_code
-                    ):
-                        total_sum += gpa.value
-
-                setattr(student, "achievements_summary", achievements_list)
-                setattr(student, "total_sum", total_sum)
-
-            total_query = select(func.count()).select_from(Student).filter(*conditions)
+            total_query = (
+                select(func.count())
+                .select_from(Student)
+                .filter(
+                    or_(
+                        Student.gpa.any(GPA.education_year_code == education_year_code),
+                        Student.student_achievements.any(
+                            and_(
+                                StudentAchievement.is_verified.is_(True),
+                                StudentAchievement.status_id == status.id,
+                                StudentAchievement.education_year_code
+                                == education_year_code,
+                                StudentAchievement.education_semester == semester_code,
+                            )
+                        ),
+                    ),
+                    *conds,  # сюда добавляются search, gender, type и т.д.
+                )
+            )
             total = await session.scalar(total_query)
 
-            return {
-                "data": students,
-                "total": total,
-            }
+            return {"data": students, "total": total}
 
     @classmethod
     async def get_all_by_student(
@@ -272,7 +273,6 @@ class RatingRepository(BaseRepository):
                             criteria_id = achievement_type_criteria.id
                             break
                     if criteria_id:
-
                         grouped_achievements[achievement_type.name] = {
                             "achievement_name": achievement_type.name,
                             "achievement_id": achievement_type.id,
