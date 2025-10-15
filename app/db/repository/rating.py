@@ -57,19 +57,22 @@ class RatingRepository(BaseRepository):
                     ),
                     with_loader_criteria(
                         GPA,
-                        GPA.education_year_code == education_year_code,
+                        GPA.education_year_code <= education_year_code,
                         include_aliases=True,
                     ),
                 )
                 .filter(
                     or_(
+                        # студент имеет GPA за указанный год
                         Student.gpa.any(GPA.education_year_code == education_year_code),
+                        # студент имеет хотя бы одно достижение за указанный год
                         Student.student_achievements.any(
                             and_(
                                 StudentAchievement.is_verified.is_(True),
                                 StudentAchievement.status_id == status.id,
                                 StudentAchievement.education_year_code
                                 == education_year_code,
+                                StudentAchievement.education_semester == semester_code,
                             )
                         ),
                     )
