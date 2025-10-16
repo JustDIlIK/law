@@ -27,17 +27,6 @@ async def get_rating(
     gender: str = "",
     current_user=Depends(PermissionChecker(["get_rating", "all"])),
 ):
-    results = await StudentRepository.find_all_by_variable(
-        education_year_code=education_year_code,
-        education_type_code=education_type_code,
-        semester_code=semester_code,
-    )
-    await check_achievements(
-        results["data"],
-        education_year_code,
-        semester_code,
-        education_type_code,
-    )
     results = await RatingRepository.get_all(
         page,
         limit,
@@ -47,6 +36,29 @@ async def get_rating(
         search=search,
         gender=gender,
     )
+    print(f"{results["total"]=}")
+    if not results["data"]:
+        results = await StudentRepository.find_all_by_variable(
+            education_year_code=education_year_code,
+            education_type_code=education_type_code,
+            semester_code=semester_code,
+        )
+
+    if await check_achievements(
+        results["data"],
+        education_year_code,
+        semester_code,
+        education_type_code,
+    ):
+        results = await RatingRepository.get_all(
+            page,
+            limit,
+            education_year_code=education_year_code,
+            education_type_code=education_type_code,
+            semester_code=semester_code,
+            search=search,
+            gender=gender,
+        )
 
     return results
 

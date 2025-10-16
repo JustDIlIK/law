@@ -42,7 +42,7 @@ async def get_attendance(
         level=level,
         search=search,
     )
-    print(f"{students=}")
+    print(f"{students["total"]=}")
     await check_achievements(
         students["data"],
         education_year,
