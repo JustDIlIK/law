@@ -163,7 +163,7 @@ async def get_rating_by_course(
 )
 async def get_rating_by_student(
     student_id_number: str,
-    education_type_code: str,
+    education_type_code: str = "",
     education_year_code: str = "",
     semester_code: str = "",
     search: str = "",
@@ -178,6 +178,7 @@ async def get_rating_by_student(
 
     education_year_code = education_year_code or student.education_year_code
     semester_code = semester_code or student.semester_code
+    education_type_code = education_type_code or student.education_type_code
 
     result = await RatingRepository.get_all_by_student(
         student_id_number=student_id_number,
