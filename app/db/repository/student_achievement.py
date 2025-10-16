@@ -34,11 +34,12 @@ class StudentAchievementRepository(BaseRepository):
     ):
         async with async_session() as session:
             offset = (page - 1) * limit
-            print(f"{status=}")
-            query = (
+
+            base_query = (
                 select(cls.model)
-                .join(cls.model.criterias)
+                .join(cls.model.student)
                 .join(cls.model.status)
+                .join(cls.model.criterias)
                 .options(joinedload(cls.model.student))
                 .options(joinedload(cls.model.status))
                 .options(
@@ -66,28 +67,29 @@ class StudentAchievementRepository(BaseRepository):
             if criterias:
                 filters.append(AchievementCriteria.achievement_type_id.in_(criterias))
             if criterias_achievements:
-                filters.append(
-                    cls.model.criterias.has(
-                        AchievementCriteria.id.in_(criterias_achievements)
-                    )
-                )
+                filters.append(AchievementCriteria.id.in_(criterias_achievements))
             if status:
                 filters.append(Status.title == status)
+
             if filters:
-                query = query.filter(*filters)
+                base_query = base_query.filter(*filters)
 
-            paginated_query = query.limit(limit).offset(offset)
-
+            paginated_query = base_query.limit(limit).offset(offset)
             result = await session.execute(paginated_query)
             data = result.unique().scalars().all()
 
-            total = await session.scalar(
+            total_query = (
                 select(func.count(func.distinct(cls.model.id)))
                 .select_from(cls.model)
-                .join(Student)
+                .join(cls.model.student)
+                .join(cls.model.status)
                 .join(cls.model.criterias)
-                .filter(*filters)
             )
+
+            if filters:
+                total_query = total_query.filter(*filters)
+
+            total = await session.scalar(total_query)
 
             return {"data": data, "total": total}
 
