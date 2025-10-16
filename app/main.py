@@ -58,6 +58,7 @@ from app.api.responses.admin import (
     StudentEducationHistoryView,
     PsychologyScoringView,
     PsychologyAchievementView,
+    EducationYearView,
 )
 
 from app.api.services.adminAuth import authentication_backend
@@ -103,6 +104,7 @@ admin.add_model_view(StudentContactView)
 admin.add_model_view(StudentEducationHistoryView)
 admin.add_model_view(PsychologyScoringView)
 admin.add_model_view(PsychologyAchievementView)
+admin.add_model_view(EducationYearView)
 
 
 app.add_middleware(

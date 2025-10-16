@@ -70,6 +70,11 @@ class LevelView(ModelView, model=Level):
     icon = "fa-solid fa-turn-up"
 
 
+class EducationYearView(ModelView, model=EducationYear):
+    column_list = [c.name for c in EducationYear.__table__.c]
+    icon = "fa-solid fa-turn-up"
+
+
 class GroupView(ModelView, model=Group):
     column_list = [c.name for c in Group.__table__.c]
     icon = "fa-solid fa-people-group"
