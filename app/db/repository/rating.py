@@ -128,7 +128,7 @@ class RatingRepository(BaseRepository):
                             "achievement_name": achievement.name,
                             "achievement_id": achievement.id,
                             "total": 0,
-                            "id": ach.id,
+                            "id": 1,
                         },
                     )
 
