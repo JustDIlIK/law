@@ -83,7 +83,7 @@ class RatingRepository(BaseRepository):
             conds = []
             if gender:
                 conds.append(Student.gender_code == gender)
-            if search:
+            if search and search.strip():
                 conds.append(Student.full_name.ilike(f"%{search.strip()}%"))
             if education_type_code:
                 conds.append(Student.education_type_code == education_type_code)
