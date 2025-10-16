@@ -35,27 +35,16 @@ class RatingRepository(BaseRepository):
             offset = (page - 1) * limit
             status = await StatusRepository.find_by_variable(title="succeed")
 
-            # === Основной запрос ===
             query = (
                 select(Student)
-                .outerjoin(
-                    GPA,
-                    GPA.student_id_number == Student.student_id_number,
-                )
-                .outerjoin(
-                    StudentAchievement,
-                    StudentAchievement.student_id_number == Student.student_id_number,
-                )
                 .options(
                     selectinload(Student.student_achievements)
                     .selectinload(StudentAchievement.criterias)
                     .selectinload(AchievementCriteria.achievement_type),
                     selectinload(Student.attendance_records),
                     selectinload(Student.gpa),
-                )
-                .filter(
-                    or_(
-                        GPA.education_year_code == education_year_code,
+                    with_loader_criteria(
+                        StudentAchievement,
                         and_(
                             StudentAchievement.is_verified.is_(True),
                             StudentAchievement.status_id == status.id,
@@ -63,13 +52,34 @@ class RatingRepository(BaseRepository):
                             == education_year_code,
                             StudentAchievement.education_semester == semester_code,
                         ),
-                        # 👇 чтобы не исключались студенты без записей
-                        and_(GPA.id.is_(None), StudentAchievement.id.is_(None)),
+                        include_aliases=True,
+                    ),
+                    with_loader_criteria(
+                        GPA,
+                        GPA.education_year_code <= education_year_code,
+                        include_aliases=True,
+                    ),
+                )
+                .filter(
+                    or_(
+                        Student.gpa.any(GPA.education_year_code == education_year_code),
+                        Student.student_achievements.any(
+                            and_(
+                                StudentAchievement.is_verified.is_(True),
+                                StudentAchievement.status_id == status.id,
+                                StudentAchievement.education_year_code
+                                == education_year_code,
+                                StudentAchievement.education_semester == semester_code,
+                            )
+                        ),
                     )
                 )
+                .order_by(Student.education_year_code)
+                .offset(offset)
+                .limit(limit)
             )
 
-            # === Дополнительные фильтры ===
+            # 🔹 Общие условия фильтра
             conds = []
             if gender:
                 conds.append(Student.gender_code == gender)
@@ -80,20 +90,18 @@ class RatingRepository(BaseRepository):
             if conds:
                 query = query.filter(*conds)
 
-            query = query.order_by(Student.full_name).offset(offset).limit(limit)
-
-            # === Выполнение ===
+            # 🔹 Выполнение
             result = await session.execute(query)
             students = result.unique().scalars().all()
-
-            # === Постобработка ===
             all_achievemenents = await AchievementTypeRepository.find_all_by_variable(
-                limit=100, type=education_type_code
+                limit=100,
+                type=education_type_code,
             )
             has_achievement_index = []
-
+            # 🔹 Постобработка студентов
             for s in students:
                 grouped = {}
+                total_sum = 0
                 for ach in s.student_achievements:
                     ach_type = ach.criterias.achievement_type
                     name = ach_type.name
@@ -110,8 +118,8 @@ class RatingRepository(BaseRepository):
                         grouped[name]["total"] + ach.value, ach_type.max_score
                     )
                     has_achievement_index.append(ach.criterias.achievement_type_id)
-
                 for achievement in all_achievemenents["data"]:
+                    print(achievement)
                     if achievement.id in has_achievement_index:
                         continue
                     grouped.setdefault(
@@ -132,31 +140,25 @@ class RatingRepository(BaseRepository):
                     or g.education_year_code == education_year_code
                 )
 
-            # === Подсчёт total ===
             total_query = (
                 select(func.count(func.distinct(Student.id)))
                 .select_from(Student)
-                .outerjoin(GPA, GPA.student_id_number == Student.student_id_number)
-                .outerjoin(
-                    StudentAchievement,
-                    StudentAchievement.student_id_number == Student.student_id_number,
-                )
                 .filter(
                     or_(
-                        GPA.education_year_code == education_year_code,
-                        and_(
-                            StudentAchievement.is_verified.is_(True),
-                            StudentAchievement.status_id == status.id,
-                            StudentAchievement.education_year_code
-                            == education_year_code,
-                            StudentAchievement.education_semester == semester_code,
+                        Student.gpa.any(GPA.education_year_code == education_year_code),
+                        Student.student_achievements.any(
+                            and_(
+                                StudentAchievement.is_verified.is_(True),
+                                StudentAchievement.status_id == status.id,
+                                StudentAchievement.education_year_code
+                                == education_year_code,
+                                StudentAchievement.education_semester == semester_code,
+                            )
                         ),
-                        and_(GPA.id.is_(None), StudentAchievement.id.is_(None)),
                     ),
                     *conds,
                 )
             )
-
             total = await session.scalar(total_query)
             return {"data": students, "total": total}
 
