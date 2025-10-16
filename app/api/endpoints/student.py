@@ -1,7 +1,7 @@
 import asyncio
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 from starlette.requests import Request
 
 from app.api.dependencies.permissions import PermissionChecker
@@ -121,7 +121,7 @@ async def delete_student(
 
 @router.patch("/change-password")
 async def change_password(
-    new_password: str,
+    new_password: str = Body(...),
     current_user=Depends(PermissionChecker(["all"])),
 ):
     hash_password = get_hashed_password(new_password)
@@ -133,8 +133,8 @@ async def change_password(
 
 @router.patch("/admin-change-password")
 async def admin_change_password(
-    user_id: int,
-    new_password: str,
+    user_id: int = Body(...),
+    new_password: str = Body(...),
     current_user=Depends(PermissionChecker(["all"])),
 ):
     hash_password = get_hashed_password(new_password)

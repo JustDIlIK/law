@@ -7,6 +7,9 @@ from app.db.models import Permission
 async def seed_permissions():
     permission_names = [
         "all",
+        "get_permission",
+        "add_permission_to_role",
+        "delete_permission_from_role",
         "get_achievements_criteria",
         "add_achievements_criteria",
         "delete_achievements_criteria",
