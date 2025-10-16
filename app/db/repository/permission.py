@@ -31,3 +31,26 @@ class PermissionRepository(BaseRepository):
             await session.refresh(role)
 
             return role
+
+    @classmethod
+    async def remove_link(
+        cls,
+        permission_id: int,
+        role_id: int,
+    ):
+        async with async_session() as session:
+            role: Role = await RoleRepository.find_by_id(record_id=role_id)
+            query = select(cls.model).filter_by(id=permission_id)
+            permission = await session.execute(query)
+            permission = permission.scalar_one_or_none()
+
+            if not role or not permission:
+                return None
+
+            if permission in role.permissions:
+                role.permissions.remove(permission)
+
+            await session.commit()
+            await session.refresh(role)
+
+            return role

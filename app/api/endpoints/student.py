@@ -5,7 +5,10 @@ from fastapi import APIRouter, Depends
 from starlette.requests import Request
 
 from app.api.dependencies.permissions import PermissionChecker
+from app.api.services.auth import get_hashed_password
+from app.db.repository.base import BaseRepository
 from app.db.repository.student import StudentRepository
+from app.db.repository.user import UserRepository
 
 router = APIRouter(prefix="/students", tags=["Студенты"])
 
@@ -114,3 +117,28 @@ async def delete_student(
 ):
     student = await StudentRepository.delete_student(student_id)
     return student
+
+
+@router.patch("/change-password")
+async def change_password(
+    new_password: str,
+    current_user=Depends(PermissionChecker(["all"])),
+):
+    hash_password = get_hashed_password(new_password)
+
+    user = await UserRepository.update_data(id=current_user.id, password=hash_password)
+
+    return user
+
+
+@router.patch("/admin-change-password")
+async def admin_change_password(
+    user_id: int,
+    new_password: str,
+    current_user=Depends(PermissionChecker(["all"])),
+):
+    hash_password = get_hashed_password(new_password)
+
+    user = await UserRepository.update_data(id=user_id, password=hash_password)
+
+    return user
