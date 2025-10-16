@@ -6,6 +6,7 @@ import uvicorn
 from fastapi import FastAPI
 from sqladmin import Admin
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
 
 from app.api.auth.utils import seed_permissions
@@ -62,6 +63,7 @@ from app.api.responses.admin import (
 from app.api.services.adminAuth import authentication_backend
 
 from app.api.services.scheduler import start_scheduler, stop_scheduler
+from app.config.config import settings
 from app.db.connection import engine
 
 
@@ -112,6 +114,11 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.KEY,
+    session_cookie="admin",
+)
 app.include_router(auth_router)
 app.include_router(student_router)
 app.include_router(employee_router)
