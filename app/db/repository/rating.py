@@ -93,12 +93,15 @@ class RatingRepository(BaseRepository):
             # 🔹 Выполнение
             result = await session.execute(query)
             students = result.unique().scalars().all()
-
+            all_achievemenents = await AchievementTypeRepository.find_all_by_variable(
+                limit=100,
+                type=education_type_code,
+            )
+            has_achievement_index = []
             # 🔹 Постобработка студентов
             for s in students:
                 grouped = {}
                 total_sum = 0
-
                 for ach in s.student_achievements:
                     ach_type = ach.criterias.achievement_type
                     name = ach_type.name
@@ -114,6 +117,21 @@ class RatingRepository(BaseRepository):
                     grouped[name]["total"] = min(
                         grouped[name]["total"] + ach.value, ach_type.max_score
                     )
+                    has_achievement_index.append(ach.criterias.achievement_type_id)
+                for achievement in all_achievemenents["data"]:
+                    print(achievement)
+                    if achievement.id in has_achievement_index:
+                        continue
+                    grouped.setdefault(
+                        achievement.name,
+                        {
+                            "achievement_name": achievement.name,
+                            "achievement_id": achievement.id,
+                            "total": 0,
+                            "id": ach.id,
+                        },
+                    )
+
                 s.achievements_summary = list(grouped.values())
                 s.total_sum = sum(v["total"] for v in grouped.values()) + sum(
                     g.value

@@ -140,19 +140,19 @@ async def get_rating_by_course(
                 semester_code=student.semester_code,
             )
 
-        if await check_achievements(
+        await check_achievements(
             results["data"],
             student.education_year_code,
             student.semester_code,
             student.education_type_code,
-        ):
-            results = await RatingRepository.get_all(
-                page,
-                limit,
-                education_year_code=student.education_year_code,
-                education_type_code=student.education_type_code,
-                semester_code=student.semester_code,
-            )
+        )
+        results = await RatingRepository.get_all(
+            page,
+            limit,
+            education_year_code=student.education_year_code,
+            education_type_code=student.education_type_code,
+            semester_code=student.semester_code,
+        )
 
     return results
 

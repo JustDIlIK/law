@@ -10,7 +10,7 @@ router = APIRouter(
 
 @router.get("")
 async def get_all():
-    result = PermissionRepository.get_all(
+    result = await PermissionRepository.get_all(
         limit=200,
     )
 
@@ -22,7 +22,7 @@ async def add_all_permission_to_role(
     permission_id: int,
     role_id: int,
 ):
-    result = PermissionRepository.add_link(
+    result = await PermissionRepository.add_link(
         permission_id=permission_id,
         role_id=role_id,
     )
