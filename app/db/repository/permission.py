@@ -29,36 +29,7 @@ class PermissionRepository(BaseRepository):
             if not permissions:
                 return None
 
-            for permission in permissions:
-                if permission not in role.permissions:
-                    role.permissions.append(permission)
-
-            await session.commit()
-            await session.refresh(role)
-            return role
-
-    @classmethod
-    async def remove_link(
-        cls,
-        permission_list_id: list[int],
-        role_id: int,
-    ):
-        async with async_session() as session:
-            result = await session.execute(select(Role).where(Role.id == role_id))
-            role = result.scalar_one_or_none()
-            if not role:
-                return None
-
-            result = await session.execute(
-                select(cls.model).where(cls.model.id.in_(permission_list_id))
-            )
-            permissions = result.scalars().all()
-            if not permissions:
-                return None
-
-            for permission in permissions:
-                if permission in role.permissions:
-                    role.permissions.remove(permission)
+            role.permissions = permissions
 
             await session.commit()
             await session.refresh(role)

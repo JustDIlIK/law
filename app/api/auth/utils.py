@@ -8,6 +8,7 @@ from app.config.config import settings
 from app.db.connection import async_session
 from app.db.models import Permission, Admin, User
 from app.db.repository.gender import GenderRepository
+from app.db.repository.permission import PermissionRepository
 from app.db.repository.role import RoleRepository
 
 
@@ -24,7 +25,6 @@ async def seed_permissions():
         ("get_rating_by_course", "Просмотр рейтинга по курсу"),
         ("get_permission", "Просмотр разрешений"),
         ("add_permission_to_role", "Добавить разрешения к роли"),
-        ("delete_permission_from_role", "Удалить разрешения из роли"),
         ("get_achievements_criteria", "Просмотр критериев достижений"),
         ("add_achievements_criteria", "Добавить критерий достижения"),
         ("delete_achievements_criteria", "Удалить критерий достижения"),
@@ -104,14 +104,16 @@ async def seed_permissions():
 
             gender_code = await GenderRepository.find_by_variable(code="11")
             admin_role = await RoleRepository.find_by_variable(name="admin")
+            all_perrmision = await PermissionRepository.find_by_variable(name="all")
 
             if not admin_role:
                 admin_role = await RoleRepository.add_record(
                     name="admin",
                     is_show=True,
                 )
+                await PermissionRepository.add_link([all_perrmision.id], admin_role.id)
 
-            if gender_code:
+            if gender_code and all_perrmision:
                 new_user_admin = User(
                     login=settings.USER_ADMIN_LOGIN,
                     password=get_hashed_password(settings.USER_ADMIN_PASS),

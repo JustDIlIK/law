@@ -32,17 +32,3 @@ async def add_all_permission_to_role(
     )
 
     return result
-
-
-@router.delete("")
-async def delete_permission_to_role(
-    permission_list_id: list[int] = Body(...),
-    role_id: int = Body(...),
-    current_user=Depends(PermissionChecker(["delete_permission_from_role", "all"])),
-):
-    result = await PermissionRepository.remove_link(
-        permission_list_id=permission_list_id,
-        role_id=role_id,
-    )
-
-    return result
