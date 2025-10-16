@@ -94,6 +94,7 @@ async def add_attendance(
 async def get_attendance(
     id: int,
     count: int,
+    education_type_code: str,
     current_user=Depends(PermissionChecker(["patch_attendance", "all"])),
 ):
 
@@ -107,7 +108,10 @@ async def get_attendance(
             content="Не получилось изменить", status_code=status.HTTP_400_BAD_REQUEST
         )
 
-    attendance = await AchievementTypeRepository.find_by_variable(name="Attendance")
+    attendance = await AchievementTypeRepository.find_by_variable(
+        name="Attendance",
+        type=education_type_code,
+    )
     print(f"{attendance=}")
 
     if not attendance:
