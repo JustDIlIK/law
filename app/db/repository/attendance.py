@@ -14,70 +14,95 @@ class AttendanceRepository(BaseRepository):
     @classmethod
     async def get_by_group(
         cls,
-        education_year: str = None,
-        study_year: str = None,
-        semester: str = None,
-        group_id: int = None,
+        education_year: str,
+        education_type: str,
+        semester: str,
+        group_id: int,
         gender: str = None,
         level: str = None,
+        search: str = None,
         page: int = 1,
         limit: int = 50,
     ):
         async with async_session() as session:
             offset = (page - 1) * limit
 
-            attendance_filters = []
-            if education_year:
-                attendance_filters.append(
-                    Attendance.education_year_code == str(education_year)
+            query = (
+                select(Student)
+                .filter(Student.education_type_code == education_type)
+                .options(
+                    joinedload(Student.attendance_records),
+                    joinedload(Student.student_achievements),
                 )
-
-            if semester:
-                attendance_filters.append(Attendance.semester_code == str(semester))
-
-            query = select(Student).options(
-                joinedload(Student.attendance_records),
-                joinedload(Student.student_achievements),
-                with_loader_criteria(
-                    Attendance,
-                    and_(*attendance_filters) if attendance_filters else True,
-                    include_aliases=True,
-                ),
             )
 
-            if attendance_filters:
+            if education_year:
+                edu_year_int = int(education_year)
                 query = query.filter(
-                    Student.attendance_records.any(and_(*attendance_filters))
+                    and_(
+                        datetime.now().year >= edu_year_int,
+                        edu_year_int >= Student.year_of_enter,
+                    )
                 )
-            else:
-                query = query.filter(Student.attendance_records.any())
 
             if gender:
                 query = query.filter(Student.gender_code == gender)
-            if study_year:
-                query = query.filter(
-                    Student.education_year_code <= str(datetime.now().year)
-                )
-                query = query.filter(Student.year_of_enter >= int(study_year))
+
             if level:
                 query = query.filter(Student.level_code == level)
             if group_id:
                 query = query.filter(Student.group_id == group_id)
-
+            if search:
+                query = query.filter(Student.full_name.ilike(f"%{search}%"))
             query = query.offset(offset).limit(limit)
 
             result = await session.execute(query)
             students = result.unique().scalars().all()
 
+            attendance_result = {}
+            for student in students:
+                for attendance in student.attendance_records:
+                    if (
+                        attendance.education_year_code == education_year
+                        and attendance.semester_code == semester
+                    ):
+                        attendance_result = {
+                            "total_absences": attendance.total_absences,
+                            "student_id_number": attendance.student_id_number,
+                            "updated_at": attendance.updated_at,
+                            "id": attendance.id,
+                            "semester_code": attendance.semester_code,
+                            "education_year_code": attendance.education_year_code,
+                            "created_at": attendance.created_at,
+                            "student_achievement_id": attendance.student_achievement_id,
+                        }
+                        break
+                setattr(student, "attendance", attendance_result)
             total_query = select(func.count(func.distinct(Student.id))).filter(
-                Student.group_id == group_id
+                Student.education_type_code == education_type
             )
-            if attendance_filters:
+
+            if education_year:
+                edu_year_int = int(education_year)
                 total_query = total_query.filter(
-                    Student.attendance_records.any(and_(*attendance_filters))
+                    and_(
+                        datetime.now().year >= edu_year_int,
+                        edu_year_int >= Student.year_of_enter,
+                    )
                 )
-            else:
-                total_query = total_query.filter(Student.attendance_records.any())
+
+            if gender:
+                total_query = total_query.filter(Student.gender_code == gender)
+            if level:
+                total_query = total_query.filter(Student.level_code == level)
+            if group_id:
+                total_query = total_query.filter(Student.group_id == group_id)
+            if search:
+                total_query = total_query.filter(
+                    func.lower(func.trim(Student.full_name)).like(
+                        f"%{search.strip().lower()}%"
+                    )
+                )
 
             total = await session.scalar(total_query)
 

@@ -114,7 +114,6 @@ class RatingRepository(BaseRepository):
                     grouped[name]["total"] = min(
                         grouped[name]["total"] + ach.value, ach_type.max_score
                     )
-
                 s.achievements_summary = list(grouped.values())
                 s.total_sum = sum(v["total"] for v in grouped.values()) + sum(
                     g.value

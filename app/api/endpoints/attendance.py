@@ -5,6 +5,7 @@ from starlette import status
 from starlette.responses import JSONResponse
 
 from app.api.dependencies.permissions import PermissionChecker
+from app.api.schemas.attendance import StudentListResponse
 from app.api.services.check_data import check_achievements
 from app.db.repository.achievement_criteria import AchievementCriteriaRepository
 from app.db.repository.achievement_type import AchievementTypeRepository
@@ -20,31 +21,42 @@ router = APIRouter(
 )
 
 
-@router.get("/")
+@router.get("/", response_model=StudentListResponse)
 async def get_attendance(
     education_year: str,
+    education_type_code: str,
     semester: str,
     group_id: int,
     gender: str = "",
     level: str = "",
+    search: str = "",
     current_user=Depends(PermissionChecker(["get_attendance", "all"])),
 ):
 
     students = await AttendanceRepository.get_by_group(
-        study_year=education_year,
-        group_id=group_id,
-    )
-    if not students:
-        return students
-    is_updated = await check_achievements(
-        students["data"], education_year, semester, students[0].education_type_code
-    )
-    students = await AttendanceRepository.get_by_group(
         education_year=education_year,
+        education_type=education_type_code,
         semester=semester,
         group_id=group_id,
         gender=gender,
         level=level,
+        search=search,
+    )
+    print(f"{students=}")
+    await check_achievements(
+        students["data"],
+        education_year,
+        semester,
+        education_type_code,
+    )
+    students = await AttendanceRepository.get_by_group(
+        education_year=education_year,
+        education_type=education_type_code,
+        semester=semester,
+        group_id=group_id,
+        gender=gender,
+        level=level,
+        search=search,
     )
 
     return students

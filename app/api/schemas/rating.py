@@ -1,5 +1,4 @@
 from typing import Optional, List
-
 from pydantic import BaseModel
 
 
@@ -25,10 +24,14 @@ class StudentResponse(BaseModel):
     level_code: str
     education_type_code: str
     gender_code: str
-    image_url: Optional[str]
-    gpa: List[GPAItem]
-    achievements_summary: List[AchievementSummary]
-    total_sum: float
+    image_url: Optional[str] = None
+
+    gpa: List[GPAItem] = []
+    achievements_summary: Optional[List[AchievementSummary]] = []
+    total_sum: Optional[float] = 0.0
+
+    class Config:
+        orm_mode = True
 
 
 class StudentsResponse(BaseModel):

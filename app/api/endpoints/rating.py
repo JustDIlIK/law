@@ -6,7 +6,7 @@ from app.api.dependencies.permissions import PermissionChecker
 from app.api.schemas.achievement_type import StudentRatingResponse
 from app.api.schemas.rating import StudentResponse, StudentsResponse
 from app.api.services.check_data import check_achievements
-from app.db.models import Student
+from app.db.models import Student, User
 from app.db.repository.rating import RatingRepository
 from app.db.repository.student import StudentRepository
 
@@ -111,6 +111,50 @@ async def get_rating_by_student(
         )
 
     return result
+
+
+@router.get("/by-course", response_model=StudentsResponse)
+async def get_rating_by_course(
+    page: int = 1,
+    limit: int = 50,
+    current_user: User = Depends(PermissionChecker(["get_rating_by_course", "all"])),
+):
+    results = []
+    if current_user.role.name == "student":
+        student: Student = await StudentRepository.find_by_id(record_id=current_user.id)
+
+        if not student:
+            return results
+
+        results = await RatingRepository.get_all(
+            page,
+            limit,
+            education_year_code=student.education_year_code,
+            education_type_code=student.education_type_code,
+            semester_code=student.semester_code,
+        )
+        if not results["data"]:
+            results = await StudentRepository.find_all_by_variable(
+                education_year_code=student.education_year_code,
+                education_type_code=student.education_type_code,
+                semester_code=student.semester_code,
+            )
+
+        if await check_achievements(
+            results["data"],
+            student.education_year_code,
+            student.semester_code,
+            student.education_type_code,
+        ):
+            results = await RatingRepository.get_all(
+                page,
+                limit,
+                education_year_code=student.education_year_code,
+                education_type_code=student.education_type_code,
+                semester_code=student.semester_code,
+            )
+
+    return results
 
 
 @router.get(
