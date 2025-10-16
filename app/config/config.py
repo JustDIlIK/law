@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     DB_PASS: str = ""
     DB_NAME: str = ""
 
+    ADMIN_EMAIL: str = ""
+    ADMIN_PASS: str = ""
+
+    USER_ADMIN_LOGIN: str = ""
+    USER_ADMIN_PASS: str = ""
+
     KEY: str = ""
     ALGORITHM: str = ""
 

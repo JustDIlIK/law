@@ -12,45 +12,54 @@ class PermissionRepository(BaseRepository):
     @classmethod
     async def add_link(
         cls,
-        permission_id: int,
+        permission_list_id: list[int],
         role_id: int,
     ):
         async with async_session() as session:
-            role: Role = await RoleRepository.find_by_id(record_id=role_id)
-            query = select(cls.model).filter_by(id=permission_id)
-            permission = await session.execute(query)
-            permission = permission.scalar_one_or_none()
 
-            if not role or not permission:
+            result = await session.execute(select(Role).where(Role.id == role_id))
+            role = result.scalar_one_or_none()
+            if not role:
                 return None
 
-            if permission not in role.permissions:
-                role.permissions.append(permission)
+            result = await session.execute(
+                select(cls.model).where(cls.model.id.in_(permission_list_id))
+            )
+            permissions = result.scalars().all()
+            if not permissions:
+                return None
+
+            for permission in permissions:
+                if permission not in role.permissions:
+                    role.permissions.append(permission)
 
             await session.commit()
             await session.refresh(role)
-
             return role
 
     @classmethod
     async def remove_link(
         cls,
-        permission_id: int,
+        permission_list_id: list[int],
         role_id: int,
     ):
         async with async_session() as session:
-            role: Role = await RoleRepository.find_by_id(record_id=role_id)
-            query = select(cls.model).filter_by(id=permission_id)
-            permission = await session.execute(query)
-            permission = permission.scalar_one_or_none()
-
-            if not role or not permission:
+            result = await session.execute(select(Role).where(Role.id == role_id))
+            role = result.scalar_one_or_none()
+            if not role:
                 return None
 
-            if permission in role.permissions:
-                role.permissions.remove(permission)
+            result = await session.execute(
+                select(cls.model).where(cls.model.id.in_(permission_list_id))
+            )
+            permissions = result.scalars().all()
+            if not permissions:
+                return None
+
+            for permission in permissions:
+                if permission in role.permissions:
+                    role.permissions.remove(permission)
 
             await session.commit()
             await session.refresh(role)
-
             return role

@@ -69,7 +69,7 @@ async def get_rating_by_student(
     education_type_code: str = "",
     search: str = "",
     gender: str = "",
-    current_user=Depends(PermissionChecker(["get_rating_student", "all"])),
+    current_user=Depends(PermissionChecker(["get_rating_own_student", "all"])),
 ):
     print(f"{current_user.role.name=}")
 

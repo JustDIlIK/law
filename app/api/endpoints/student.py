@@ -122,7 +122,7 @@ async def delete_student(
 @router.patch("/change-password")
 async def change_password(
     new_password: str = Body(...),
-    current_user=Depends(PermissionChecker(["all"])),
+    current_user=Depends(PermissionChecker(["change_own_password", "all"])),
 ):
     hash_password = get_hashed_password(new_password)
 
@@ -135,7 +135,7 @@ async def change_password(
 async def admin_change_password(
     user_id: int = Body(...),
     new_password: str = Body(...),
-    current_user=Depends(PermissionChecker(["all"])),
+    current_user=Depends(PermissionChecker(["change_password_by_admin", "all"])),
 ):
     hash_password = get_hashed_password(new_password)
 

@@ -37,8 +37,6 @@ class AdminAuth(AuthenticationBackend):
         if not token:
             return False
         user = await get_current_user(token)
-        return True
-
         if not user:
             return False
 

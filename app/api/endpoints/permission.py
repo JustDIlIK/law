@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 
 from app.api.dependencies.permissions import PermissionChecker
 from app.db.repository.permission import PermissionRepository
@@ -22,12 +22,12 @@ async def get_all(
 
 @router.post("")
 async def add_all_permission_to_role(
-    permission_id: int,
-    role_id: int,
+    permission_list_id: list[int] = Body(...),
+    role_id: int = Body(...),
     current_user=Depends(PermissionChecker(["add_permission_to_role", "all"])),
 ):
     result = await PermissionRepository.add_link(
-        permission_id=permission_id,
+        permission_list_id=permission_list_id,
         role_id=role_id,
     )
 
@@ -36,12 +36,12 @@ async def add_all_permission_to_role(
 
 @router.delete("")
 async def delete_permission_to_role(
-    permission_id: int,
-    role_id: int,
+    permission_list_id: list[int] = Body(...),
+    role_id: int = Body(...),
     current_user=Depends(PermissionChecker(["delete_permission_from_role", "all"])),
 ):
-    result = PermissionRepository.remove_link(
-        permission_id=permission_id,
+    result = await PermissionRepository.remove_link(
+        permission_list_id=permission_list_id,
         role_id=role_id,
     )
 

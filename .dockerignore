@@ -2,6 +2,4 @@
 __pycache__
 .idea
 .env
-.env.prod
-postgres-data/
 app/uploads/

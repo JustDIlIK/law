@@ -21,6 +21,7 @@ class Permission(Base):
     __tablename__ = "permissions"
 
     name: Mapped[str] = mapped_column(unique=True)
+    title: Mapped[str] = mapped_column(nullable=True)
 
     roles = relationship(
         "Role",
