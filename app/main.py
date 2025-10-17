@@ -86,17 +86,9 @@ admin = Admin(
     app,
     engine,
     authentication_backend=authentication_backend,
-    base_url="/admin/",
     logo_url="/uploads/source/logo.png",
     favicon_url="/uploads/source/logo.ico",
 )
-
-
-@app.middleware("http")
-async def debug_headers(request: Request, call_next):
-    print("🔎 X-Forwarded-Proto:", request.headers.get("x-forwarded-proto"))
-    response = await call_next(request)
-    return response
 
 
 admin.add_model_view(AdminView)

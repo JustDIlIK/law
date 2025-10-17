@@ -3,6 +3,7 @@ from datetime import datetime
 from app.db.repository.achievement_criteria import AchievementCriteriaRepository
 from app.db.repository.achievement_type import AchievementTypeRepository
 from app.db.repository.attendance import AttendanceRepository
+from app.db.repository.education_year import EducationYearRepository
 from app.db.repository.rating import RatingRepository
 from app.db.repository.status import StatusRepository
 from app.db.repository.student_achievement import StudentAchievementRepository
@@ -45,6 +46,19 @@ async def check_achievements(
                     semester_code=semester_code,
                 )
                 if not is_att:
+
+                    year_code = await EducationYearRepository.find_by_variable(
+                        code=str(year)
+                    )
+
+                    if not year_code:
+                        await EducationYearRepository.add_record(
+                            code=str(year),
+                            name=f"{str(year)}-{str(year + 1)}",
+                            current=False,
+                            is_available=True,
+                        )
+
                     sa = await StudentAchievementRepository.add_record(
                         student_id_number=student.student_id_number,
                         achievement_criteria_id=attendance_el.id,

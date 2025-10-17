@@ -668,6 +668,7 @@ async def add_student(students_list: list):
         education_year = await EducationYearRepository.find_by_variable(
             code=student_education_year["code"]
         )
+        print(f"{education_year=}")
         if not education_year:
             education_year = await EducationYearRepository.add_record(
                 **student_education_year
