@@ -4,10 +4,10 @@ from pydantic import BaseModel, ConfigDict
 
 
 class AttendanceShort(BaseModel):
-    id: int
-    total_absences: int
-    semester_code: str
-    education_year_code: str
+    id: Optional[int] = None
+    total_absences: Optional[int] = None
+    semester_code: Optional[str] = None
+    education_year_code: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     student_id_number: Optional[str] = None

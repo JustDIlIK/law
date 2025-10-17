@@ -699,9 +699,9 @@ async def add_student(students_list: list):
 
         await check_achievements(
             students=[student_take],
-            education_year_code=student_take.education_year_code,
+            # education_year_code=student_take.education_year_code,
             group_id=student_take.group_id,
-            semester_code=student_semester,
+            # semester_code=student_semester,
             education_type_code=student_take.education_type_code,
         )
         pattern = re.compile(

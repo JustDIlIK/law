@@ -72,7 +72,7 @@ from app.db.connection import engine
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await asyncio.sleep(15)
+    # await asyncio.sleep(15)
     start_scheduler()
     await seed_permissions()
     yield
@@ -148,6 +148,6 @@ app.include_router(psychology_scoring_router)
 app.include_router(role_router)
 app.include_router(permission_router)
 
-#
-# if __name__ == "__main__":
-#     uvicorn.run("app.main:app", host="0.0.0.0", port=8000)
+
+if __name__ == "__main__":
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000)
