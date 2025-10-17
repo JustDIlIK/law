@@ -30,13 +30,8 @@ async def register_user(
     login: str = Body(...),
     password: str = Body(...),
     full_name: str = Body(...),
-    short_name: str = Body(...),
-    first_name: str = Body(...),
-    second_name: str = Body(...),
-    third_name: str = Body(...),
     gender_code: str = Body(...),
     role_id: int = Body(...),
-    is_default: bool = Body(...),
     current_user=Depends(PermissionChecker(["user_register", "all"])),
 ):
     existing_user = await UserRepository.find_one_or_none(login=login)
@@ -52,16 +47,12 @@ async def register_user(
         login=login,
         password=password,
         full_name=full_name,
-        short_name=short_name,
-        first_name=first_name,
-        second_name=second_name,
-        third_name=third_name,
         gender_code=gender_code,
         image_url=image_url,
         role_id=role_id,
         created_at=datetime.now(),
         updated_at=datetime.now(),
-        is_default=is_default,
+        is_default=False,
     )
 
     return user
