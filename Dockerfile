@@ -14,4 +14,5 @@ CMD alembic upgrade head && \
         --workers 3 \
         --timeout 300 \
         --worker-class uvicorn.workers.UvicornWorker \
+        --proxy-headers \
         --forwarded-allow-ips="*"
