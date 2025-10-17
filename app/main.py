@@ -10,7 +10,6 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
-from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app.api.auth.utils import seed_permissions
 from app.api.endpoints.student import router as student_router
@@ -125,7 +124,6 @@ app.add_middleware(
     secret_key=settings.KEY,
     session_cookie="admin",
 )
-app.add_middleware(ProxyHeadersMiddleware)
 app.include_router(auth_router)
 app.include_router(student_router)
 app.include_router(employee_router)
