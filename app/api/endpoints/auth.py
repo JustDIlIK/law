@@ -26,7 +26,6 @@ router = APIRouter(
 
 @router.post("/register")
 async def register_user(
-    image: UploadFile = Depends(check_image),
     login: str = Body(...),
     password: str = Body(...),
     full_name: str = Body(...),
@@ -40,7 +39,6 @@ async def register_user(
             status_code=409, content={"detail": "Данный логин уже был использован"}
         )
 
-    image_url = await save_image(image, settings.USER_URL)
     password = get_hashed_password(password)
 
     user = await UserRepository.add_record(
@@ -48,7 +46,6 @@ async def register_user(
         password=password,
         full_name=full_name,
         gender_code=gender_code,
-        image_url=image_url,
         role_id=role_id,
         created_at=datetime.now(),
         updated_at=datetime.now(),
