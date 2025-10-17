@@ -36,7 +36,8 @@ async def register_user(
     third_name: str = Body(...),
     gender_code: str = Body(...),
     role_id: int = Body(...),
-    # current_user=Depends(PermissionChecker(["user_register", "all"])),
+    is_default: bool = Body(...),
+    current_user=Depends(PermissionChecker(["user_register", "all"])),
 ):
     existing_user = await UserRepository.find_one_or_none(login=login)
     if existing_user:
@@ -60,6 +61,7 @@ async def register_user(
         role_id=role_id,
         created_at=datetime.now(),
         updated_at=datetime.now(),
+        is_default=is_default,
     )
 
     return user
@@ -97,3 +99,14 @@ async def login_user(user=Depends(get_current_user)):
 
         return student
     return user
+
+
+@router.get("/users")
+async def get_users(
+    current_user=Depends(PermissionChecker(["get_users", "all"])),
+):
+
+    users = await UserRepository.find_all_by_variable(
+        is_default=False,
+    )
+    return users

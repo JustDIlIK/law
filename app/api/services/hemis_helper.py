@@ -685,6 +685,7 @@ async def add_student(students_list: list):
         stud["semester_code"] = student_semester
         # Фото
         student_image = student_element["image"]
+        print(f"{student_image=}")
         if student_image:
             filename = uuid.uuid4()
             filetype = student_image.split(".")[-1]

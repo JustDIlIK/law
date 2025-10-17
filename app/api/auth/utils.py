@@ -75,6 +75,7 @@ async def seed_permissions():
         ("add_student_education", "Добавить образование студента"),
         ("get_student_education", "Просмотр образования студента"),
         ("get_subjects", "Просмотр предметов"),
+        ("get_users", "Получение пользователей системы"),
     ]
 
     async with async_session() as session:
@@ -129,6 +130,7 @@ async def seed_permissions():
                     year_of_enter=datetime.now().year,
                     created_at=func.now(),
                     updated_at=func.now(),
+                    is_default=False,
                 )
 
                 session.add(new_user_admin)

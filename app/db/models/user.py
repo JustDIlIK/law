@@ -25,6 +25,10 @@ class User(Base):
     third_name: Mapped[str] = mapped_column(String(512), nullable=False)
     image_url: Mapped[Optional[str]] = mapped_column(String(512))
     is_active: Mapped[bool] = mapped_column(default=True)
+    is_default: Mapped[bool] = mapped_column(
+        default=True,
+        nullable=True,
+    )
 
     department_code: Mapped[str] = mapped_column(
         ForeignKey("departments.code"),
