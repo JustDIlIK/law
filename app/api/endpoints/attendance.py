@@ -43,21 +43,21 @@ async def get_attendance(
         search=search,
     )
     print(f"{students["total"]=}")
-    await check_achievements(
-        students["data"],
-        education_year,
-        semester,
-        education_type_code,
-    )
-    students = await AttendanceRepository.get_by_group(
-        education_year=education_year,
-        education_type=education_type_code,
-        semester=semester,
-        group_id=group_id,
-        gender=gender,
-        level=level,
-        search=search,
-    )
+    # await check_achievements(
+    #     students["data"],
+    #     education_year,
+    #     semester,
+    #     education_type_code,
+    # )
+    # students = await AttendanceRepository.get_by_group(
+    #     education_year=education_year,
+    #     education_type=education_type_code,
+    #     semester=semester,
+    #     group_id=group_id,
+    #     gender=gender,
+    #     level=level,
+    #     search=search,
+    # )
 
     return students
 

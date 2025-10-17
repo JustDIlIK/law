@@ -18,3 +18,5 @@ services:
     ports:
       - "10001:10001"
     restart: always
+    volumes:
+      - ./app/uploads:/law/uploads:ro

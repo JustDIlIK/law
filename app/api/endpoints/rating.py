@@ -44,21 +44,21 @@ async def get_rating(
             semester_code=semester_code,
         )
 
-    if await check_achievements(
-        results["data"],
-        education_year_code,
-        semester_code,
-        education_type_code,
-    ):
-        results = await RatingRepository.get_all(
-            page,
-            limit,
-            education_year_code=education_year_code,
-            education_type_code=education_type_code,
-            semester_code=semester_code,
-            search=search,
-            gender=gender,
-        )
+    # if await check_achievements(
+    #     results["data"],
+    #     education_year_code,
+    #     semester_code,
+    #     education_type_code,
+    # ):
+    #     results = await RatingRepository.get_all(
+    #         page,
+    #         limit,
+    #         education_year_code=education_year_code,
+    #         education_type_code=education_type_code,
+    #         semester_code=semester_code,
+    #         search=search,
+    #         gender=gender,
+    #     )
 
     return results
 
@@ -93,23 +93,23 @@ async def get_rating_by_student(
         search=search,
         gender=gender,
     )
-
-    is_updated = await check_achievements(
-        [result],
-        education_year_code,
-        semester_code,
-        st.education_type_code,
-    )
-
-    if is_updated:
-        result = await RatingRepository.get_all_by_student(
-            student_id_number=st.student_id_number,
-            education_year_code=education_year_code,
-            education_type_code=education_type_code,
-            semester_code=semester_code,
-            search=search,
-            gender=gender,
-        )
+    #
+    # is_updated = await check_achievements(
+    #     [result],
+    #     education_year_code,
+    #     semester_code,
+    #     st.education_type_code,
+    # )
+    #
+    # if is_updated:
+    #     result = await RatingRepository.get_all_by_student(
+    #         student_id_number=st.student_id_number,
+    #         education_year_code=education_year_code,
+    #         education_type_code=education_type_code,
+    #         semester_code=semester_code,
+    #         search=search,
+    #         gender=gender,
+    #     )
 
     return result
 
@@ -141,19 +141,19 @@ async def get_rating_by_course(
                 semester_code=student.semester_code,
             )
 
-        await check_achievements(
-            results["data"],
-            student.education_year_code,
-            student.semester_code,
-            student.education_type_code,
-        )
-        results = await RatingRepository.get_all(
-            page,
-            limit,
-            education_year_code=student.education_year_code,
-            education_type_code=student.education_type_code,
-            semester_code=student.semester_code,
-        )
+        # await check_achievements(
+        #     results["data"],
+        #     student.education_year_code,
+        #     student.semester_code,
+        #     student.education_type_code,
+        # )
+        # results = await RatingRepository.get_all(
+        #     page,
+        #     limit,
+        #     education_year_code=student.education_year_code,
+        #     education_type_code=student.education_type_code,
+        #     semester_code=student.semester_code,
+        # )
 
     return results
 
@@ -190,16 +190,16 @@ async def get_rating_by_student(
         gender=gender,
     )
 
-    if await check_achievements(
-        [result], education_year_code, semester_code, education_type_code
-    ):
-        result = await RatingRepository.get_all_by_student(
-            student_id_number=student_id_number,
-            education_year_code=education_year_code,
-            education_type_code=education_type_code,
-            semester_code=semester_code,
-            search=search,
-            gender=gender,
-        )
+    # if await check_achievements(
+    #     [result], education_year_code, semester_code, education_type_code
+    # ):
+    #     result = await RatingRepository.get_all_by_student(
+    #         student_id_number=student_id_number,
+    #         education_year_code=education_year_code,
+    #         education_type_code=education_type_code,
+    #         semester_code=semester_code,
+    #         search=search,
+    #         gender=gender,
+    #     )
 
     return result

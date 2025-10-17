@@ -12,7 +12,11 @@ from app.db.models.gender import Gender
 class User(Base):
     __tablename__ = "users"
 
-    login: Mapped[str] = mapped_column(String(512), nullable=False)
+    login: Mapped[str] = mapped_column(
+        String(512),
+        nullable=False,
+        unique=True,
+    )
     password: Mapped[str] = mapped_column(String(512), nullable=False)
     full_name: Mapped[str] = mapped_column(String(512), nullable=False)
     short_name: Mapped[str] = mapped_column(String(512), nullable=False)

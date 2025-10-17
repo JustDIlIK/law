@@ -364,7 +364,7 @@ async def add_student(students_list: list):
             "year_of_enter": student_element["year_of_enter"],
             "created_at": from_seconds_to_date(student_element["created_at"]),
             "updated_at": from_seconds_to_date(student_element["updated_at"]),
-            "login": f"{student_element['second_name'].lower()}_{student_element['first_name'].lower()}",
+            "login": f"{student_element['second_name'].lower()}_{student_element['first_name'].lower()}_{student_element['third_name'].lower()}",
             "password": get_hashed_password(student_element["second_name"]),
             "role_id": student_role.id,
             "is_graduate": student_element["is_graduate"],

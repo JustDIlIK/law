@@ -1,3 +1,4 @@
+import asyncio
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -70,6 +71,7 @@ from app.db.connection import engine
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await asyncio.sleep(15)
     start_scheduler()
     await seed_permissions()
     yield
@@ -77,7 +79,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-# app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 admin = Admin(
     app,
     engine,
