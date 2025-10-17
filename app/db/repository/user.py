@@ -15,7 +15,8 @@ class UserRepository(BaseRepository):
             offset = (page - 1) * limit
             query = (
                 select(cls.model)
-                .options(joinedload(cls.model.role).joinedload(cls.model.gender))
+                .options(joinedload(cls.model.role))
+                .options(joinedload(cls.model.gender))
                 .limit(limit)
                 .offset(offset)
                 .filter_by(**data)
