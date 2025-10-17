@@ -9,6 +9,7 @@ from sqladmin import Admin
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app.api.auth.utils import seed_permissions
 from app.api.endpoints.student import router as student_router
@@ -79,7 +80,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+# app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 admin = Admin(
     app,
     engine,
@@ -123,6 +124,7 @@ app.add_middleware(
     secret_key=settings.KEY,
     session_cookie="admin",
 )
+app.add_middleware(ProxyHeadersMiddleware)
 app.include_router(auth_router)
 app.include_router(student_router)
 app.include_router(employee_router)
@@ -146,6 +148,6 @@ app.include_router(psychology_scoring_router)
 app.include_router(role_router)
 app.include_router(permission_router)
 
-
-if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000)
+#
+# if __name__ == "__main__":
+#     uvicorn.run("app.main:app", host="0.0.0.0", port=8000)
