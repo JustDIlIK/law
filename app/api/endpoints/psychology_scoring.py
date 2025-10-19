@@ -38,64 +38,64 @@ async def get_psychology_scoring(
         semester_code=semester_code,
         search=search,
     )
-
-    for score in scoring["data"]:
-        if not score.psychology_scorings:
-            scores = await PsychologyAchievementRepository.get_all()
-            for psycho_score in scores["data"]:
-                print(psycho_score)
-                existing = await PsychologyScoringRepository.find_by_variable(
-                    psychology_achievement_id=psycho_score.id,
-                    student_id_number=score.student_id_number,
-                    education_year_code=education_year_code,
-                    semester_code=semester_code,
-                )
-
-                if not existing:
-                    await PsychologyScoringRepository.add_record(
-                        psychology_achievement_id=psycho_score.id,
-                        score=0,
-                        student_id_number=score.student_id_number,
-                        education_year_code=education_year_code,
-                        semester_code=semester_code,
-                        education_type_code=education_type_code,
-                    )
-            scoring = await PsychologyScoringRepository.take_all_students(
-                page=page,
-                limit=limit,
-                education_year_code=education_year_code,
-                education_type_code=education_type_code,
-                semester_code=semester_code,
-                search=search,
-            )
-        else:
-            scores = await PsychologyAchievementRepository.get_all()
-            for student_score in scores["data"]:
-
-                is_has = await PsychologyScoringRepository.find_by_variable(
-                    psychology_achievement_id=student_score.id,
-                    education_year_code=education_year_code,
-                    education_type_code=education_type_code,
-                    semester_code=semester_code,
-                )
-
-                if not is_has:
-                    await PsychologyScoringRepository.add_record(
-                        psychology_achievement_id=student_score.id,
-                        score=0,
-                        student_id_number=score.student_id_number,
-                        education_year_code=education_year_code,
-                        semester_code=semester_code,
-                        education_type_code=education_type_code,
-                    )
-            scoring = await PsychologyScoringRepository.take_all_students(
-                page=page,
-                limit=limit,
-                education_year_code=education_year_code,
-                education_type_code=education_type_code,
-                semester_code=semester_code,
-                search=search,
-            )
+    #
+    # for score in scoring["data"]:
+    #     if not score.psychology_scorings:
+    #         scores = await PsychologyAchievementRepository.get_all()
+    #         for psycho_score in scores["data"]:
+    #             print(psycho_score)
+    #             existing = await PsychologyScoringRepository.find_by_variable(
+    #                 psychology_achievement_id=psycho_score.id,
+    #                 student_id_number=score.student_id_number,
+    #                 education_year_code=education_year_code,
+    #                 semester_code=semester_code,
+    #             )
+    #
+    #             if not existing:
+    #                 await PsychologyScoringRepository.add_record(
+    #                     psychology_achievement_id=psycho_score.id,
+    #                     score=0,
+    #                     student_id_number=score.student_id_number,
+    #                     education_year_code=education_year_code,
+    #                     semester_code=semester_code,
+    #                     education_type_code=education_type_code,
+    #                 )
+    #         scoring = await PsychologyScoringRepository.take_all_students(
+    #             page=page,
+    #             limit=limit,
+    #             education_year_code=education_year_code,
+    #             education_type_code=education_type_code,
+    #             semester_code=semester_code,
+    #             search=search,
+    #         )
+    #     else:
+    #         scores = await PsychologyAchievementRepository.get_all()
+    #         for student_score in scores["data"]:
+    #
+    #             is_has = await PsychologyScoringRepository.find_by_variable(
+    #                 psychology_achievement_id=student_score.id,
+    #                 education_year_code=education_year_code,
+    #                 education_type_code=education_type_code,
+    #                 semester_code=semester_code,
+    #             )
+    #
+    #             if not is_has:
+    #                 await PsychologyScoringRepository.add_record(
+    #                     psychology_achievement_id=student_score.id,
+    #                     score=0,
+    #                     student_id_number=score.student_id_number,
+    #                     education_year_code=education_year_code,
+    #                     semester_code=semester_code,
+    #                     education_type_code=education_type_code,
+    #                 )
+    #         scoring = await PsychologyScoringRepository.take_all_students(
+    #             page=page,
+    #             limit=limit,
+    #             education_year_code=education_year_code,
+    #             education_type_code=education_type_code,
+    #             semester_code=semester_code,
+    #             search=search,
+    #         )
 
     return scoring
 

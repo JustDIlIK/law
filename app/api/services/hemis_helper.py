@@ -330,7 +330,7 @@ async def add_student(students_list: list):
 
     if not student_role:
         student_role = await RoleRepository.add_record(name="student")
-
+    count_num = 0
     for student_element in students_list:
 
         check_user = await UserRepository.find_by_variable(
@@ -345,7 +345,9 @@ async def add_student(students_list: list):
 
         if check_user and check_student:
             continue
+        count_num += 1
 
+        print(f"{count_num=}")
         # Универ
 
         stud = {

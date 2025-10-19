@@ -1,9 +1,12 @@
 from datetime import datetime
 
+from app.db.models import PsychologyAchievement
 from app.db.repository.achievement_criteria import AchievementCriteriaRepository
 from app.db.repository.achievement_type import AchievementTypeRepository
 from app.db.repository.attendance import AttendanceRepository
 from app.db.repository.education_year import EducationYearRepository
+from app.db.repository.psychology_achievement import PsychologyAchievementRepository
+from app.db.repository.psychology_scoring import PsychologyScoringRepository
 from app.db.repository.rating import RatingRepository
 from app.db.repository.status import StatusRepository
 from app.db.repository.student_achievement import StudentAchievementRepository
@@ -100,5 +103,29 @@ async def check_achievements(
                         status_id=status.id,
                     )
                     is_updated = True
+                # Psychology
+                psychology_scoring_achievements = (
+                    await PsychologyAchievementRepository.get_all()
+                )
 
+                for psychology_scoring_achievement in psychology_scoring_achievements[
+                    "data"
+                ]:
+
+                    is_psychology = await PsychologyScoringRepository.find_by_variable(
+                        psychology_achievement_id=psychology_scoring_achievement.id,
+                        education_year_code=str(year),
+                        student_id_number=student.student_id_number,
+                        semester_code=semester_code,
+                    )
+                    if not is_psychology:
+                        await PsychologyScoringRepository.add_record(
+                            student_id_number=student.student_id_number,
+                            psychology_achievement_id=psychology_scoring_achievement.id,
+                            score=0,
+                            updated_at=datetime.now(),
+                            education_year_code=str(year),
+                            semester_code=semester_code,
+                            education_type_code=student.education_type_code,
+                        )
     return is_updated
